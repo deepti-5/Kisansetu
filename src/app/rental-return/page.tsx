@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { ChevronRight, RotateCcw, Shield, CheckCircle, AlertTriangle, Camera, IndianRupee, Phone, Star, Clock, Truck, XCircle, Eye, RefreshCw, ChevronLeft } from 'lucide-react';
+import { ChevronRight, RotateCcw, Shield, CheckCircle, AlertTriangle, Camera, IndianRupee, Phone, Star, Clock, Truck, XCircle, Eye, RefreshCw, ChevronLeft, Mail } from 'lucide-react';
+import { toast } from 'sonner';
 
 type ReturnStep = 'request' | 'otp' | 'inspection' | 'damage' | 'deposit' | 'refund';
 type UserRole = 'farmer' | 'provider';
@@ -50,6 +51,25 @@ const STEP_CONFIG: { key: ReturnStep; label: string; farmerLabel?: string; provi
   { key: 'refund', label: 'Refund' },
 ];
 
+// ── Email helper ──────────────────────────────────────────────────────────────
+async function sendRentalEmail(payload: Record<string, unknown>) {
+  try {
+    await fetch('/api/rental-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // silent — email is non-blocking
+  }
+}
+
+// ── Mock contacts (in real app these come from booking/auth data) ─────────────
+const MOCK_CONTACTS = {
+  farmerEmail: 'farmer@example.com',
+  providerEmail: 'provider@example.com',
+};
+
 export default function RentalReturnPage() {
   const [role, setRole] = useState<UserRole>('farmer');
   const [step, setStep] = useState<ReturnStep>('request');
@@ -63,6 +83,7 @@ export default function RentalReturnPage() {
   const [inspectionNotes, setInspectionNotes] = useState('');
   const [conditionRating, setConditionRating] = useState(0);
   const [refundProcessed, setRefundProcessed] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
 
   const MOCK_OTP = '4821';
 
@@ -82,6 +103,16 @@ export default function RentalReturnPage() {
   function handleSendOTP() {
     setOtpSent(true);
     setOtpTimer(60);
+    // Email: OTP handover
+    sendRentalEmail({
+      type: 'otp_handover',
+      ...MOCK_CONTACTS,
+      farmerName: MOCK_BOOKING.farmerName,
+      providerName: MOCK_BOOKING.supplierName,
+      bookingId: MOCK_BOOKING.id,
+      equipmentName: MOCK_BOOKING.equipmentName,
+      otp: MOCK_OTP,
+    });
   }
 
   function handleVerifyOTP() {
@@ -92,6 +123,73 @@ export default function RentalReturnPage() {
 
   function toggleDamage(id: string) {
     setDamages((prev) => prev.map((d) => d.id === id ? { ...d, checked: !d.checked } : d));
+  }
+
+  async function handleReturnRequestApproved() {
+    setEmailSending(true);
+    await sendRentalEmail({
+      type: 'return_request_approved',
+      ...MOCK_CONTACTS,
+      farmerName: MOCK_BOOKING.farmerName,
+      providerName: MOCK_BOOKING.supplierName,
+      bookingId: MOCK_BOOKING.id,
+      equipmentName: MOCK_BOOKING.equipmentName,
+    });
+    setEmailSending(false);
+    toast.success('Return approved — confirmation email sent');
+    goNext();
+  }
+
+  async function handleInspectionComplete() {
+    setEmailSending(true);
+    await sendRentalEmail({
+      type: 'inspection_results',
+      ...MOCK_CONTACTS,
+      farmerName: MOCK_BOOKING.farmerName,
+      providerName: MOCK_BOOKING.supplierName,
+      bookingId: MOCK_BOOKING.id,
+      equipmentName: MOCK_BOOKING.equipmentName,
+      conditionRating,
+      inspectionNotes,
+    });
+    setEmailSending(false);
+    toast.success('Inspection saved — results emailed to farmer');
+    goNext();
+  }
+
+  async function handleDamageAssessmentComplete() {
+    setEmailSending(true);
+    await sendRentalEmail({
+      type: 'damage_assessment',
+      ...MOCK_CONTACTS,
+      farmerName: MOCK_BOOKING.farmerName,
+      providerName: MOCK_BOOKING.supplierName,
+      bookingId: MOCK_BOOKING.id,
+      equipmentName: MOCK_BOOKING.equipmentName,
+      damages: damages.filter(d => d.checked).map(d => ({ label: d.label, cost: d.cost })),
+      totalDamageCost,
+      depositAmount: MOCK_BOOKING.deposit,
+    });
+    setEmailSending(false);
+    toast.success('Damage assessment emailed to farmer & provider');
+    goNext();
+  }
+
+  async function handleRefundProcessed() {
+    setEmailSending(true);
+    await sendRentalEmail({
+      type: 'refund_processed',
+      ...MOCK_CONTACTS,
+      farmerName: MOCK_BOOKING.farmerName,
+      providerName: MOCK_BOOKING.supplierName,
+      bookingId: MOCK_BOOKING.id,
+      equipmentName: MOCK_BOOKING.equipmentName,
+      refundAmount,
+      refundMethod: 'Original Payment Method',
+    });
+    setEmailSending(false);
+    setRefundProcessed(true);
+    toast.success('Refund initiated — confirmation email sent!');
   }
 
   function goNext() {
@@ -205,11 +303,16 @@ export default function RentalReturnPage() {
                     <div className="flex justify-between"><span className="text-muted-foreground">Return Reason</span><span className="font-semibold text-primary">Work completed</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Requested On</span><span className="font-semibold">Today, 10:30 AM</span></div>
                   </div>
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-2">
+                    <Mail size={14} className="text-primary shrink-0" />
+                    <p className="text-xs text-muted-foreground">Accepting will send a confirmation email to the farmer with next steps.</p>
+                  </div>
                   <div className="flex gap-3">
-                    <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-success text-white font-bold text-sm hover:bg-success/90 transition-colors"><CheckCircle size={16} /> Accept Return</button>
+                    <button onClick={handleReturnRequestApproved} disabled={emailSending} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-success text-white font-bold text-sm hover:bg-success/90 transition-colors disabled:opacity-60">
+                      <CheckCircle size={16} /> {emailSending ? 'Sending...' : 'Accept Return'}
+                    </button>
                     <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-danger text-white font-bold text-sm hover:bg-danger/90 transition-colors"><XCircle size={16} /> Dispute</button>
                   </div>
-                  <button onClick={goNext} className="w-full btn-primary py-3">Proceed to OTP Verification →</button>
                 </>
               )}
             </div>
@@ -231,7 +334,8 @@ export default function RentalReturnPage() {
                   {!otpSent ? (
                     <div className="text-center py-4">
                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"><Phone size={28} className="text-primary" /></div>
-                      <p className="text-sm text-muted-foreground mb-4">An OTP will be sent to your registered mobile number to confirm equipment handover.</p>
+                      <p className="text-sm text-muted-foreground mb-2">An OTP will be sent to your registered mobile number to confirm equipment handover.</p>
+                      <p className="text-xs text-muted-foreground mb-4 flex items-center justify-center gap-1"><Mail size={11} /> You will also receive the OTP via email.</p>
                       <button onClick={handleSendOTP} className="btn-primary px-8 py-3">Send OTP to My Mobile</button>
                     </div>
                   ) : (
@@ -330,7 +434,13 @@ export default function RentalReturnPage() {
                     <label className="block text-sm font-semibold text-foreground mb-2">Inspection Notes</label>
                     <textarea value={inspectionNotes} onChange={(e) => setInspectionNotes(e.target.value)} placeholder="Describe the equipment condition after return..." rows={3} className="input-field text-sm resize-none w-full" />
                   </div>
-                  <button disabled={conditionRating === 0} onClick={goNext} className="w-full btn-primary py-3 disabled:opacity-50">Save Inspection & Continue →</button>
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-2">
+                    <Mail size={14} className="text-primary shrink-0" />
+                    <p className="text-xs text-muted-foreground">Saving inspection will email results to the farmer automatically.</p>
+                  </div>
+                  <button disabled={conditionRating === 0 || emailSending} onClick={handleInspectionComplete} className="w-full btn-primary py-3 disabled:opacity-50">
+                    {emailSending ? 'Sending email...' : 'Save Inspection & Continue →'}
+                  </button>
                 </>
               )}
             </div>
@@ -386,9 +496,22 @@ export default function RentalReturnPage() {
                 </div>
               )}
 
+              {role === 'provider' && (
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-2">
+                  <Mail size={14} className="text-primary shrink-0" />
+                  <p className="text-xs text-muted-foreground">Submitting will email the damage report to the farmer and KisanSetu support.</p>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button onClick={goBack} className="btn-secondary py-3 px-5"><ChevronLeft size={16} /></button>
-                <button onClick={goNext} className="flex-1 btn-primary py-3">Proceed to Deposit Calculation →</button>
+                {role === 'provider' ? (
+                  <button onClick={handleDamageAssessmentComplete} disabled={emailSending} className="flex-1 btn-primary py-3 disabled:opacity-60">
+                    {emailSending ? 'Sending email...' : 'Submit Assessment & Continue →'}
+                  </button>
+                ) : (
+                  <button onClick={goNext} className="flex-1 btn-primary py-3">Proceed to Deposit Calculation →</button>
+                )}
               </div>
             </div>
           )}
@@ -488,8 +611,13 @@ export default function RentalReturnPage() {
                     </div>
                   )}
 
-                  <button onClick={() => setRefundProcessed(true)} className="w-full btn-primary py-3 font-bold">
-                    {role === 'farmer' ? 'Confirm Return Complete' : 'Initiate Refund Transfer'}
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-2">
+                    <Mail size={14} className="text-primary shrink-0" />
+                    <p className="text-xs text-muted-foreground">A refund confirmation email will be sent to both farmer and provider.</p>
+                  </div>
+
+                  <button onClick={handleRefundProcessed} disabled={emailSending} className="w-full btn-primary py-3 font-bold disabled:opacity-60">
+                    {emailSending ? 'Processing & sending email...' : role === 'farmer' ? 'Confirm Return Complete' : 'Initiate Refund Transfer'}
                   </button>
                 </>
               ) : (
@@ -498,13 +626,15 @@ export default function RentalReturnPage() {
                     <CheckCircle size={40} className="text-success" />
                   </div>
                   <h2 className="text-2xl font-extrabold text-foreground mb-2">Return Complete!</h2>
-                  <p className="text-sm text-muted-foreground mb-5">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {role === 'farmer'
                       ? `Your deposit refund of ₹${refundAmount.toLocaleString('en-IN')} has been initiated and will be credited within 3–5 business days.`
                       : `Refund of ₹${refundAmount.toLocaleString('en-IN')} has been initiated to the farmer's account.`}
                   </p>
+                  <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 mb-5">
+                    <Mail size={11} /> Confirmation email sent to both parties
+                  </p>
                   <div className="bg-muted/40 rounded-xl p-4 text-sm space-y-2 mb-6 text-left">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Return ID</span><span className="font-bold text-primary">RTN{Math.floor(Math.random() * 90000 + 10000)}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Refund Amount</span><span className="font-bold text-success font-tabular">₹{refundAmount.toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="text-success font-semibold">Processing</span></div>
                   </div>
