@@ -63,7 +63,7 @@ export default function BookingsPage() {
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('searchBookings')} className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
           {FILTER_TABS.map((tab) => <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition-all ${activeTab === tab.key ? 'gradient-green text-white border-transparent' : 'border-border text-muted-foreground bg-card hover:border-primary hover:text-primary'}`}>{tab.label}</button>)}
         </div>
 
@@ -93,7 +93,9 @@ export default function BookingsPage() {
                     </div>
                     <div className="flex gap-2 mt-3">
                       {['confirmed', 'preparing', 'received', 'rental_active'].includes(booking.status) && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"><Truck size={13} /> {t('track')}</button>}
-                      {booking.status === 'rental_active' && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-semibold hover:bg-warning/20 transition-colors"><RotateCcw size={13} /> {t('return')}</button>}
+                      {booking.status === 'rental_active' && (
+                        <Link href="/rental-return" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-semibold hover:bg-warning/20 transition-colors"><RotateCcw size={13} /> {t('return')}</Link>
+                      )}
                       {booking.status === 'returned' && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors">{t('writeReview')}</button>}
                     </div>
                   </div>
