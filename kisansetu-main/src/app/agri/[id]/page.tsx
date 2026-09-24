@@ -284,16 +284,16 @@ export default function AgriProductDetailPage() {
       <Footer />
 
       {/* Buy Now Modal */}
-      {showBuyModal && (
-        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
+      {showBuyModal &&
+      <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
           <div className="bg-card w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-modal max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 bg-card z-10">
               <h3 className="font-bold text-base text-foreground">{buyDone ? '🎉 Order Confirmed' : 'Buy Now'}</h3>
               <button onClick={() => setShowBuyModal(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">✕</button>
             </div>
             <div className="p-5">
-              {!buyDone ? (
-                <div className="space-y-4">
+              {!buyDone ?
+            <div className="space-y-4">
                   <div className="flex items-center gap-3 bg-muted/40 rounded-xl p-3">
                     <AppImage src={PRODUCT.images[0].src} alt={PRODUCT.images[0].alt} className="w-14 h-14 rounded-lg object-cover" />
                     <div>
@@ -306,21 +306,21 @@ export default function AgriProductDetailPage() {
                     <div className="flex justify-between"><span className="text-muted-foreground">Quantity</span><span className="font-semibold">{qty} kg</span></div>
                     <div className="flex justify-between border-t border-border pt-2"><span className="font-bold">Total</span><span className="font-bold text-primary text-lg">₹{totalAmount.toLocaleString('en-IN')}</span></div>
                   </div>
-                  {payError && (
-                    <div className="bg-danger/10 border border-danger/20 rounded-xl p-3 text-sm text-danger">{payError}</div>
-                  )}
+                  {payError &&
+              <div className="bg-danger/10 border border-danger/20 rounded-xl p-3 text-sm text-danger">{payError}</div>
+              }
                   <RazorpayCheckout
-                    amount={totalAmount}
-                    description={`Purchase: ${PRODUCT.name} x${qty}kg`}
-                    receipt={buyReceipt}
-                    buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')}`}
-                    onSuccess={handlePaySuccess}
-                    onError={handlePayError}
-                    onDismiss={() => setShowBuyModal(false)}
-                  />
-                </div>
-              ) : (
-                <div className="text-center space-y-4 py-4">
+                amount={totalAmount}
+                description={`Purchase: ${PRODUCT.name} x${qty}kg`}
+                receipt={buyReceipt}
+                buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')}`}
+                onSuccess={handlePaySuccess}
+                onError={handlePayError}
+                onDismiss={() => setShowBuyModal(false)} />
+              
+                </div> :
+
+            <div className="text-center space-y-4 py-4">
                   <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mx-auto">
                     <CheckCircle size={36} className="text-success" />
                   </div>
@@ -339,11 +339,11 @@ export default function AgriProductDetailPage() {
                     <button onClick={() => setShowBuyModal(false)} className="flex-1 btn-secondary py-2.5 rounded-xl font-semibold text-sm">Close</button>
                   </div>
                 </div>
-              )}
+            }
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }

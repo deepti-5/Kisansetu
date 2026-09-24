@@ -179,7 +179,7 @@ export default function AuthScreen() {
       }
 
       toast.success('Login successful! Redirecting...');
-      setTimeout(() => { window.location.href = '/'; }, 1000);
+      setTimeout(() => {window.location.href = '/';}, 1000);
     }, 1800);
   }
 
@@ -213,7 +213,7 @@ export default function AuthScreen() {
       localStorage.setItem('kisansetu_current_user', JSON.stringify(newUser));
 
       toast.success('Account created! Welcome to KisanSetu 🌾');
-      setTimeout(() => { window.location.href = '/'; }, 1200);
+      setTimeout(() => {window.location.href = '/';}, 1200);
     }, 2000);
   }
 

@@ -10,7 +10,7 @@ const CATEGORIES = [
   href: '/equipment-listing-page',
   color: 'from-green-600 to-green-800',
   badge: '2,345+ Listed',
-  image: "https://images.unsplash.com/photo-1708417134916-234bb4b33881",
+  image: "https://images.unsplash.com/photo-1462811404017-1bb91081d006",
   imageAlt: 'Red Mahindra tractor in green agricultural field ready for farming',
   emoji: '🚜'
 },

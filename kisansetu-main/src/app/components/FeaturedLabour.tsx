@@ -11,7 +11,7 @@ const LABOUR = [
   id: 'lab-001',
   name: 'Ramesh Yadav',
   role: 'Harvesting Worker',
-  image: "https://img.rocket.new/generatedImages/rocket_gen_img_1579523d5-1763293623618.png",
+  image: "https://img.rocket.new/generatedImages/rocket_gen_img_19b54ab7f-1772435023997.png",
   imageAlt: 'Indian male farm worker in his 30s wearing a blue shirt with confident expression',
   ratePerDay: 500,
   rating: 4.6,

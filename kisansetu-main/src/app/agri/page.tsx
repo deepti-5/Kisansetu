@@ -63,7 +63,7 @@ const ALL_PRODUCTS: Product[] = [
 },
 {
   id: 'agri-005', name: 'Wheat Seeds — HD-2967', category: 'Seeds',
-  image: "https://images.unsplash.com/photo-1630349592160-2ccf1174f126",
+  image: "https://img.rocket.new/generatedImages/rocket_gen_img_196405c92-1772059982644.png",
   imageAlt: 'Golden wheat seeds in a wooden bowl with wheat stalks in background',
   price: 780, mrp: 900, unit: 'per kg', rating: 4.7, reviews: 189,
   seller: 'AgroMart Pune', inStock: true, badge: 'Premium',
@@ -111,7 +111,7 @@ const ALL_PRODUCTS: Product[] = [
 },
 {
   id: 'agri-011', name: 'Hand Sprayer (16 Ltr)', category: 'Tools & Equipment',
-  image: "https://img.rocket.new/generatedImages/rocket_gen_img_1736ac5d8-1764657819365.png",
+  image: "https://images.unsplash.com/photo-1628352081506-83c43123ed6d",
   imageAlt: 'Blue hand-operated backpack sprayer for agricultural pesticide application',
   price: 1200, mrp: 1500, unit: 'per unit', rating: 4.3, reviews: 167,
   seller: 'FarmTools India', inStock: true,

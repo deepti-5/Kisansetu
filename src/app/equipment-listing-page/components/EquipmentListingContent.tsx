@@ -1,0 +1,180 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import EquipmentFilters from './EquipmentFilters';
+import EquipmentGrid from './EquipmentGrid';
+import EquipmentListView from './EquipmentListView';
+import EquipmentSortBar from './EquipmentSortBar';
+import EquipmentSearchBar from './EquipmentSearchBar';
+import { SlidersHorizontal, X, Users } from 'lucide-react';
+import Link from 'next/link';
+
+export interface Equipment {
+  id: string; name: string; category: string; image: string; imageAlt: string;
+  rentPerDay: number; rentPerHour: number; buyPrice: number; deposit: number;
+  location: string; district: string; state: string; distance: number;
+  rating: number; reviews: number; available: boolean; units: number;
+  owner: string; ownerPhone: string; specs: string; yearMade: number;
+  horsepower?: number; brand: string; listingType: 'rent' | 'buy' | 'both';
+}
+
+export const ALL_EQUIPMENT: Equipment[] = [
+  { id: 'eq-001', name: 'Mahindra Yuvo 575 DI Tractor', category: 'Tractor', image: 'https://images.unsplash.com/photo-1708417134916-234bb4b33881', imageAlt: 'Red Mahindra Yuvo 575 DI tractor in green farm field with blue sky background', rentPerDay: 2500, rentPerHour: 350, buyPrice: 750000, deposit: 10000, location: 'Hadapsar, Pune', district: 'Pune', state: 'Maharashtra', distance: 2.4, rating: 4.6, reviews: 128, available: true, units: 2, owner: 'Rajesh Patil', ownerPhone: '+91 98765 43210', specs: '47 HP, 2WD, Power Steering', yearMade: 2022, horsepower: 47, brand: 'Mahindra', listingType: 'both' },
+  { id: 'eq-002', name: 'Sonalika DI 42 Tractor', category: 'Tractor', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_164563762-1781166803079.png', imageAlt: 'Orange Sonalika tractor ploughing brown agricultural field in daytime', rentPerDay: 2200, rentPerHour: 300, buyPrice: 620000, deposit: 8000, location: 'Kothrud, Pune', district: 'Pune', state: 'Maharashtra', distance: 3.1, rating: 4.3, reviews: 74, available: true, units: 1, owner: 'Priya Deshmukh', ownerPhone: '+91 87654 32109', specs: '42 HP, 2WD, Dual Clutch', yearMade: 2021, horsepower: 42, brand: 'Sonalika', listingType: 'both' },
+  { id: 'eq-003', name: 'John Deere W70 Combine Harvester', category: 'Harvester', image: 'https://images.unsplash.com/photo-1653474351870-0c89db2d1654', imageAlt: 'Yellow John Deere combine harvester cutting golden wheat crop at sunset', rentPerDay: 8000, rentPerHour: 1100, buyPrice: 3200000, deposit: 25000, location: 'Sinhagad Road, Pune', district: 'Pune', state: 'Maharashtra', distance: 5.7, rating: 4.7, reviews: 203, available: false, units: 1, owner: 'Sunil Mane', ownerPhone: '+91 76543 21098', specs: '110 HP, AC Cabin, GPS Guidance', yearMade: 2023, horsepower: 110, brand: 'John Deere', listingType: 'rent' },
+  { id: 'eq-004', name: 'Claas Crop Tiger Harvester', category: 'Harvester', image: 'https://images.unsplash.com/photo-1656348144347-eb3e32c98e75', imageAlt: 'Red Claas harvester working in green paddy rice field during harvest season', rentPerDay: 7500, rentPerHour: 1000, buyPrice: 2800000, deposit: 20000, location: 'Wagholi, Pune', district: 'Pune', state: 'Maharashtra', distance: 8.2, rating: 4.5, reviews: 156, available: true, units: 1, owner: 'Anil Shinde', ownerPhone: '+91 65432 10987', specs: '83 HP, 4WD, Paddy Special', yearMade: 2022, horsepower: 83, brand: 'Claas', listingType: 'rent' },
+  { id: 'eq-005', name: 'Kubota Rotavator 5ft', category: 'Rotavator', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1f72a525d-1776095395384.png', imageAlt: 'Orange Kubota rotavator tilling dark brown agricultural soil in open field', rentPerDay: 800, rentPerHour: 120, buyPrice: 85000, deposit: 2000, location: 'Baner, Pune', district: 'Pune', state: 'Maharashtra', distance: 4.5, rating: 4.2, reviews: 89, available: true, units: 3, owner: 'Kavita Jadhav', ownerPhone: '+91 54321 09876', specs: '5 ft Width, L-Type Blades, 48 Blades', yearMade: 2021, brand: 'Kubota', listingType: 'both' },
+  { id: 'eq-006', name: 'Fieldking Mega Rotavator 6ft', category: 'Rotavator', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1f72a525d-1776095395384.png', imageAlt: 'Green Fieldking rotavator implement on tractor working in ploughed farm field', rentPerDay: 1000, rentPerHour: 140, buyPrice: 95000, deposit: 2500, location: 'Mundhwa, Pune', district: 'Pune', state: 'Maharashtra', distance: 6.3, rating: 4.4, reviews: 62, available: true, units: 2, owner: 'Ganesh More', ownerPhone: '+91 43210 98765', specs: '6 ft Width, C-Type Blades, 54 Blades', yearMade: 2022, brand: 'Fieldking', listingType: 'both' },
+  { id: 'eq-007', name: 'Fieldking Seed Drill 9 Row', category: 'Seed Drill', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_104eaccee-1768761568871.png', imageAlt: 'Blue seed drill agricultural implement being towed by tractor in brown field', rentPerDay: 1200, rentPerHour: 160, buyPrice: 95000, deposit: 3000, location: 'Wagholi, Pune', district: 'Pune', state: 'Maharashtra', distance: 8.2, rating: 4.2, reviews: 56, available: true, units: 2, owner: 'Anil Shinde', ownerPhone: '+91 32109 87654', specs: '9 Row, 225mm Row Spacing, Fertilizer Box', yearMade: 2020, brand: 'Fieldking', listingType: 'both' },
+  { id: 'eq-008', name: 'Mahindra Seed-o-Matic Drill', category: 'Seed Drill', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_104eaccee-1768761568871.png', imageAlt: 'Red Mahindra seed drill implement in agricultural field with rows visible', rentPerDay: 1100, rentPerHour: 150, buyPrice: 88000, deposit: 2800, location: 'Hadapsar, Pune', district: 'Pune', state: 'Maharashtra', distance: 3.8, rating: 4.0, reviews: 41, available: false, units: 1, owner: 'Rajesh Patil', ownerPhone: '+91 98765 43210', specs: '11 Row, Zero Till, Inclined Plate', yearMade: 2021, brand: 'Mahindra', listingType: 'both' },
+  { id: 'eq-009', name: 'Aspee Knapsack Sprayer 16L', category: 'Sprayer', image: 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d', imageAlt: 'Yellow Aspee knapsack sprayer being used to spray pesticide on green crops', rentPerDay: 300, rentPerHour: 50, buyPrice: 4500, deposit: 500, location: 'Kothrud, Pune', district: 'Pune', state: 'Maharashtra', distance: 2.9, rating: 4.1, reviews: 112, available: true, units: 5, owner: 'Priya Deshmukh', ownerPhone: '+91 87654 32109', specs: '16 Litre, Battery Powered, 2 Nozzles', yearMade: 2022, brand: 'Aspee', listingType: 'both' },
+  { id: 'eq-010', name: 'Honda Power Tiller FJ500', category: 'Power Tiller', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1e7a72901-1768249566100.png', imageAlt: 'Red Honda power tiller machine being operated in small agricultural field', rentPerDay: 600, rentPerHour: 90, buyPrice: 55000, deposit: 1500, location: 'Sinhagad, Pune', district: 'Pune', state: 'Maharashtra', distance: 7.1, rating: 4.3, reviews: 78, available: true, units: 2, owner: 'Sunil Mane', ownerPhone: '+91 76543 21098', specs: '5 HP, 4 Stroke, 600mm Width', yearMade: 2021, brand: 'Honda', listingType: 'both' },
+  { id: 'eq-011', name: 'Landforce Disc Plough 3 Disc', category: 'Plough', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_184f2f7ce-1784126857599.png', imageAlt: 'Silver disc plough agricultural implement attached to tractor in dry field', rentPerDay: 700, rentPerHour: 100, buyPrice: 32000, deposit: 1500, location: 'Baner, Pune', district: 'Pune', state: 'Maharashtra', distance: 5.0, rating: 4.0, reviews: 34, available: true, units: 3, owner: 'Kavita Jadhav', ownerPhone: '+91 54321 09876', specs: '3 Disc, 610mm Disc Dia, 200mm Depth', yearMade: 2020, brand: 'Landforce', listingType: 'both' },
+  { id: 'eq-012', name: 'Kartar Thresher 4000', category: 'Thresher', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_4190c32d4-1790272006147.png', imageAlt: 'Yellow Kartar thresher machine separating wheat grains in farm yard', rentPerDay: 1800, rentPerHour: 250, buyPrice: 145000, deposit: 5000, location: 'Mundhwa, Pune', district: 'Pune', state: 'Maharashtra', distance: 9.4, rating: 4.4, reviews: 67, available: true, units: 1, owner: 'Ganesh More', ownerPhone: '+91 43210 98765', specs: '15 HP, 4000 kg/hr Capacity, Paddy & Wheat', yearMade: 2022, brand: 'Kartar', listingType: 'rent' },
+];
+
+export const CATEGORIES = ['All', 'Tractor', 'Harvester', 'Rotavator', 'Seed Drill', 'Sprayer', 'Power Tiller', 'Plough', 'Thresher', 'Cultivator'];
+
+export interface FilterState {
+  categories: string[]; listingType: 'all' | 'rent' | 'buy';
+  minPrice: number; maxPrice: number; minRating: number;
+  availableOnly: boolean; maxDistance: number; searchQuery: string;
+}
+
+const DEFAULT_FILTERS: FilterState = { categories: [], listingType: 'all', minPrice: 0, maxPrice: 10000, minRating: 0, availableOnly: false, maxDistance: 50, searchQuery: '' };
+
+export default function EquipmentListingContent() {
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [sortBy, setSortBy] = useState<string>('nearest');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  const filtered = useMemo(() => {
+    let result = [...ALL_EQUIPMENT];
+    if (filters.searchQuery) {
+      const q = filters.searchQuery.toLowerCase();
+      result = result.filter((e) => e.name.toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || e.brand.toLowerCase().includes(q));
+    }
+    if (filters.categories.length > 0) result = result.filter((e) => filters.categories.includes(e.category));
+    if (filters.listingType !== 'all') result = result.filter((e) => e.listingType === filters.listingType || e.listingType === 'both');
+    result = result.filter((e) => e.rentPerDay >= filters.minPrice && e.rentPerDay <= filters.maxPrice);
+    if (filters.minRating > 0) result = result.filter((e) => e.rating >= filters.minRating);
+    if (filters.availableOnly) result = result.filter((e) => e.available);
+    result = result.filter((e) => e.distance <= filters.maxDistance);
+    switch (sortBy) {
+      case 'price-asc': result.sort((a, b) => a.rentPerDay - b.rentPerDay); break;
+      case 'price-desc': result.sort((a, b) => b.rentPerDay - a.rentPerDay); break;
+      case 'nearest': result.sort((a, b) => a.distance - b.distance); break;
+      case 'rating': result.sort((a, b) => b.rating - a.rating); break;
+      case 'available': result.sort((a, b) => a.available === b.available ? 0 : a.available ? -1 : 1); break;
+    }
+    return result;
+  }, [filters, sortBy]);
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  function clearFilter(key: keyof FilterState) { setFilters((prev) => ({ ...prev, [key]: DEFAULT_FILTERS[key] })); setCurrentPage(1); }
+  function clearAllFilters() { setFilters(DEFAULT_FILTERS); setCurrentPage(1); }
+
+  const activeFilterChips: { label: string; key: keyof FilterState }[] = [];
+  if (filters.categories.length > 0) activeFilterChips.push({ label: filters.categories.join(', '), key: 'categories' });
+  if (filters.listingType !== 'all') activeFilterChips.push({ label: filters.listingType === 'rent' ? 'For Rent' : 'For Buy', key: 'listingType' });
+  if (filters.availableOnly) activeFilterChips.push({ label: 'Available Only', key: 'availableOnly' });
+  if (filters.minRating > 0) activeFilterChips.push({ label: `${filters.minRating}★+`, key: 'minRating' });
+  if (filters.maxDistance < 50) activeFilterChips.push({ label: `Within ${filters.maxDistance} km`, key: 'maxDistance' });
+
+  return (
+    <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 xl:px-10 2xl:px-16 py-6">
+      <div className="mb-5">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2"><span>Home</span><span>/</span><span className="text-primary font-medium">Equipment</span></div>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Agricultural Equipment</h1>
+            <p className="text-sm text-muted-foreground mt-0.5"><span className="font-semibold text-primary font-tabular">{filtered.length}</span> equipment found near Pune, MH</p>
+          </div>
+          <button onClick={() => setMobileFiltersOpen(true)} className="lg:hidden btn-secondary gap-2 py-2" suppressHydrationWarning>
+            <SlidersHorizontal size={16} />Filters
+            {activeFilterChips.length > 0 && <span className="w-5 h-5 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">{activeFilterChips.length}</span>}
+          </button>
+        </div>
+      </div>
+
+      <EquipmentSearchBar value={filters.searchQuery} onChange={(v) => { setFilters((p) => ({ ...p, searchQuery: v })); setCurrentPage(1); }} />
+
+      <div className="mt-4 mb-2 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0"><Users size={20} className="text-primary" /></div>
+          <div><p className="font-bold text-sm text-foreground">Group Booking Available</p><p className="text-xs text-muted-foreground">Share equipment costs with neighboring farmers and save up to 60%</p></div>
+        </div>
+        <Link href="/equipment/group-booking" className="shrink-0 px-4 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors whitespace-nowrap">Book as Group</Link>
+      </div>
+
+      {activeFilterChips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mt-3 mb-4">
+          <span className="text-xs text-muted-foreground font-medium">Active filters:</span>
+          {activeFilterChips.map((chip) => (
+            <button key={`chip-${chip.key}`} onClick={() => clearFilter(chip.key)} className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary border border-primary/20 text-primary text-xs font-semibold hover:bg-danger-bg hover:text-danger hover:border-danger/20 transition-colors duration-150">
+              {chip.label}<X size={11} />
+            </button>
+          ))}
+          <button onClick={clearAllFilters} className="text-xs text-danger font-semibold hover:underline">Clear All</button>
+        </div>
+      )}
+
+      <div className="flex gap-6">
+        <div className={`hidden lg:block shrink-0 transition-all duration-300 ${filtersOpen ? 'w-64 xl:w-72' : 'w-0 overflow-hidden'}`}>
+          <EquipmentFilters filters={filters} onChange={(f) => { setFilters(f); setCurrentPage(1); }} onToggle={() => setFiltersOpen(!filtersOpen)} isOpen={filtersOpen} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <EquipmentSortBar sortBy={sortBy} onSortChange={setSortBy} viewMode={viewMode} onViewChange={setViewMode} totalCount={filtered.length} filtersOpen={filtersOpen} onToggleFilters={() => setFiltersOpen(!filtersOpen)} />
+
+          {paginated.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="text-5xl mb-4">🚜</div>
+              <h3 className="font-bold text-lg text-foreground mb-2">No Equipment Found</h3>
+              <p className="text-sm text-muted-foreground mb-4 max-w-sm">No equipment matches your current filters near Pune. Try adjusting the category, price range, or distance.</p>
+              <button onClick={clearAllFilters} className="btn-primary">Clear All Filters</button>
+            </div>
+          ) : viewMode === 'grid' ? <EquipmentGrid equipment={paginated} /> : <EquipmentListView equipment={paginated} />}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-8 flex-wrap gap-3">
+              <p className="text-sm text-muted-foreground">Showing <span className="font-semibold font-tabular text-foreground">{(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-semibold font-tabular text-foreground">{filtered.length}</span> equipment</p>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 rounded-lg border border-border text-sm font-medium hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors">← Prev</button>
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const page = i + 1;
+                  const show = page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                  if (!show) { if (page === 2 || page === totalPages - 1) return <span key={`page-ellipsis-${page}`} className="px-1 text-muted-foreground">...</span>; return null; }
+                  return <button key={`page-${page}`} onClick={() => setCurrentPage(page)} className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all duration-150 ${currentPage === page ? 'gradient-green text-white shadow-sm' : 'border border-border hover:bg-secondary text-foreground'}`}>{page}</button>;
+                })}
+                <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-2 rounded-lg border border-border text-sm font-medium hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Next →</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileFiltersOpen(false)} />
+          <div className="absolute left-0 top-0 h-full w-80 max-w-full bg-card shadow-modal overflow-y-auto">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-border sticky top-0 bg-card z-10">
+              <h3 className="font-bold text-base text-foreground">Filters</h3>
+              <button onClick={() => setMobileFiltersOpen(false)} className="p-1.5 rounded-lg hover:bg-muted"><X size={18} /></button>
+            </div>
+            <div className="p-4"><EquipmentFilters filters={filters} onChange={(f) => { setFilters(f); setCurrentPage(1); }} onToggle={() => setMobileFiltersOpen(false)} isOpen /></div>
+            <div className="sticky bottom-0 bg-card border-t border-border p-4">
+              <button onClick={() => setMobileFiltersOpen(false)} className="w-full btn-primary py-3">Show {filtered.length} Results</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -12,7 +12,7 @@ const WORKER = {
   id: 'lab-001',
   name: 'Ramesh Yadav',
   role: 'Harvesting Worker',
-  image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1579523d5-1763293623618.png',
+  image: "https://img.rocket.new/generatedImages/rocket_gen_img_19b54ab7f-1772435023997.png",
   imageAlt: 'Indian male farm worker in his 30s wearing a blue shirt with confident expression',
   ratePerDay: 500,
   rating: 4.6,
@@ -32,10 +32,10 @@ const WORKER = {
   verified: true,
   aadhaarVerified: true,
   reviews_list: [
-    { name: 'Suresh Patil', rating: 5, date: '2026-07-15', comment: 'Excellent worker, very punctual and efficient. Completed the paddy harvest in record time.' },
-    { name: 'Kavita Sharma', rating: 4, date: '2026-06-28', comment: 'Good work, knows his craft well. Would hire again for next season.' },
-    { name: 'Mohan Kulkarni', rating: 5, date: '2026-06-10', comment: 'Very professional. Brought his own tools and worked without supervision.' },
-  ]
+  { name: 'Suresh Patil', rating: 5, date: '2026-07-15', comment: 'Excellent worker, very punctual and efficient. Completed the paddy harvest in record time.' },
+  { name: 'Kavita Sharma', rating: 4, date: '2026-06-28', comment: 'Good work, knows his craft well. Would hire again for next season.' },
+  { name: 'Mohan Kulkarni', rating: 5, date: '2026-06-10', comment: 'Very professional. Brought his own tools and worked without supervision.' }]
+
 };
 
 type Step = 'details' | 'form' | 'confirm' | 'success';
@@ -52,14 +52,14 @@ export default function LabourDetailPage() {
     notes: '',
     workers: '1',
     contactName: '',
-    contactPhone: '',
+    contactPhone: ''
   });
   const [bookingId] = useState('LBR' + Math.floor(100000 + Math.random() * 900000));
 
   const totalCost = WORKER.ratePerDay * parseInt(form.days || '1') * parseInt(form.workers || '1');
 
   function handleFormChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
   if (step === 'success') {
@@ -110,8 +110,8 @@ export default function LabourDetailPage() {
           </div>
         </main>
         <Footer />
-      </div>
-    );
+      </div>);
+
   }
 
   if (step === 'confirm') {
@@ -158,12 +158,12 @@ export default function LabourDetailPage() {
             <p className="text-sm text-foreground">Payment is collected securely via Razorpay. Complete payment to confirm your hire request.</p>
           </div>
 
-          {paymentError && (
-            <div className="bg-danger/10 border border-danger/20 rounded-xl p-4 mb-4 flex gap-3">
+          {paymentError &&
+          <div className="bg-danger/10 border border-danger/20 rounded-xl p-4 mb-4 flex gap-3">
               <AlertTriangle size={18} className="text-danger shrink-0 mt-0.5" />
               <p className="text-sm text-danger">{paymentError}</p>
             </div>
-          )}
+          }
 
           <RazorpayCheckout
             amount={totalCost}
@@ -176,11 +176,11 @@ export default function LabourDetailPage() {
               startDate: form.startDate,
               days: form.days,
               workers: form.workers,
-              location: form.location,
+              location: form.location
             }}
             prefill={{
               name: form.contactName,
-              contact: form.contactPhone,
+              contact: form.contactPhone
             }}
             onSuccess={() => {
               setPaymentError('');
@@ -189,12 +189,12 @@ export default function LabourDetailPage() {
             onError={(err) => {
               setPaymentError(err);
             }}
-            onDismiss={() => setPaymentError('')}
-          />
+            onDismiss={() => setPaymentError('')} />
+          
         </main>
         <Footer />
-      </div>
-    );
+      </div>);
+
   }
 
   if (step === 'form') {
@@ -211,8 +211,8 @@ export default function LabourDetailPage() {
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1.5">Work Type *</label>
               <select name="workType" value={form.workType} onChange={handleFormChange}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                {WORKER.skills.map(s => <option key={s} value={s}>{s}</option>)}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                {WORKER.skills.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
 
@@ -220,13 +220,13 @@ export default function LabourDetailPage() {
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1.5">Start Date *</label>
                 <input type="date" name="startDate" value={form.startDate} onChange={handleFormChange}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1.5">Duration (Days) *</label>
                 <select name="days" value={form.days} onChange={handleFormChange}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  {[1,2,3,4,5,6,7,10,14,21,30].map(d => <option key={d} value={d}>{d} day{d > 1 ? 's' : ''}</option>)}
+                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  {[1, 2, 3, 4, 5, 6, 7, 10, 14, 21, 30].map((d) => <option key={d} value={d}>{d} day{d > 1 ? 's' : ''}</option>)}
                 </select>
               </div>
             </div>
@@ -234,37 +234,37 @@ export default function LabourDetailPage() {
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1.5">Number of Workers *</label>
               <select name="workers" value={form.workers} onChange={handleFormChange}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                {[1,2,3,4,5,6,8,10].map(n => <option key={n} value={n}>{n} worker{n > 1 ? 's' : ''}</option>)}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n} worker{n > 1 ? 's' : ''}</option>)}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1.5">Farm Location / Address *</label>
               <input type="text" name="location" value={form.location} onChange={handleFormChange}
-                placeholder="e.g. Survey No. 45, Hadapsar, Pune"
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              placeholder="e.g. Survey No. 45, Hadapsar, Pune"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1.5">Your Name *</label>
               <input type="text" name="contactName" value={form.contactName} onChange={handleFormChange}
-                placeholder="Full name"
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              placeholder="Full name"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1.5">Contact Phone *</label>
               <input type="tel" name="contactPhone" value={form.contactPhone} onChange={handleFormChange}
-                placeholder="+91 XXXXX XXXXX"
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              placeholder="+91 XXXXX XXXXX"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1.5">Special Instructions (Optional)</label>
               <textarea name="notes" value={form.notes} onChange={handleFormChange} rows={3}
-                placeholder="Any specific requirements, tools needed, crop type, etc."
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+              placeholder="Any specific requirements, tools needed, crop type, etc."
+              className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
             </div>
 
             <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex justify-between items-center">
@@ -279,15 +279,15 @@ export default function LabourDetailPage() {
             <button
               onClick={() => setStep('confirm')}
               disabled={!form.startDate || !form.location || !form.contactName || !form.contactPhone}
-              className="w-full btn-primary py-3.5 rounded-xl font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+              className="w-full btn-primary py-3.5 rounded-xl font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed">
+              
               Review & Confirm
             </button>
           </div>
         </main>
         <Footer />
-      </div>
-    );
+      </div>);
+
   }
 
   // Details view
@@ -318,11 +318,11 @@ export default function LabourDetailPage() {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h1 className="text-xl font-extrabold text-foreground">{WORKER.name}</h1>
-                        {WORKER.verified && (
-                          <span className="flex items-center gap-1 text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full">
+                        {WORKER.verified &&
+                        <span className="flex items-center gap-1 text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full">
                             <Shield size={11} /> Verified
                           </span>
-                        )}
+                        }
                       </div>
                       <p className="text-muted-foreground text-sm mt-0.5">{WORKER.role}</p>
                       <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -339,7 +339,7 @@ export default function LabourDetailPage() {
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <button onClick={() => setWishlist(!wishlist)}
-                        className={`p-2.5 rounded-xl border transition-colors ${wishlist ? 'bg-danger/10 border-danger/30 text-danger' : 'border-border hover:bg-muted text-muted-foreground'}`}>
+                      className={`p-2.5 rounded-xl border transition-colors ${wishlist ? 'bg-danger/10 border-danger/30 text-danger' : 'border-border hover:bg-muted text-muted-foreground'}`}>
                         <Heart size={18} className={wishlist ? 'fill-danger' : ''} />
                       </button>
                       <button className="p-2.5 rounded-xl border border-border hover:bg-muted text-muted-foreground transition-colors">
@@ -365,25 +365,25 @@ export default function LabourDetailPage() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               {[
-                { label: 'Jobs Done', value: WORKER.completedJobs, icon: Briefcase },
-                { label: 'Repeat Clients', value: `${WORKER.repeatClients}%`, icon: Users },
-                { label: 'Experience', value: WORKER.experience, icon: Award },
-              ].map(stat => (
-                <div key={stat.label} className="bg-card border border-border rounded-xl p-4 text-center">
+              { label: 'Jobs Done', value: WORKER.completedJobs, icon: Briefcase },
+              { label: 'Repeat Clients', value: `${WORKER.repeatClients}%`, icon: Users },
+              { label: 'Experience', value: WORKER.experience, icon: Award }].
+              map((stat) =>
+              <div key={stat.label} className="bg-card border border-border rounded-xl p-4 text-center">
                   <stat.icon size={20} className="text-primary mx-auto mb-2" />
                   <p className="text-xl font-extrabold text-foreground">{stat.value}</p>
                   <p className="text-xs text-muted-foreground">{stat.label}</p>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Skills */}
             <div className="bg-card border border-border rounded-2xl p-5">
               <h2 className="font-bold text-foreground mb-3">Skills & Expertise</h2>
               <div className="flex flex-wrap gap-2">
-                {WORKER.skills.map(skill => (
-                  <span key={skill} className="px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-lg">{skill}</span>
-                ))}
+                {WORKER.skills.map((skill) =>
+                <span key={skill} className="px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-lg">{skill}</span>
+                )}
               </div>
             </div>
 
@@ -393,9 +393,9 @@ export default function LabourDetailPage() {
                 <Languages size={18} className="text-primary" /> Languages
               </h2>
               <div className="flex gap-2 flex-wrap">
-                {WORKER.languages.map(lang => (
-                  <span key={lang} className="px-3 py-1.5 bg-muted text-foreground text-sm font-medium rounded-lg">{lang}</span>
-                ))}
+                {WORKER.languages.map((lang) =>
+                <span key={lang} className="px-3 py-1.5 bg-muted text-foreground text-sm font-medium rounded-lg">{lang}</span>
+                )}
               </div>
             </div>
 
@@ -403,20 +403,20 @@ export default function LabourDetailPage() {
             <div className="bg-card border border-border rounded-2xl p-5">
               <h2 className="font-bold text-foreground mb-4">Reviews ({WORKER.reviews})</h2>
               <div className="space-y-4">
-                {WORKER.reviews_list.map((rev, i) => (
-                  <div key={i} className={`pb-4 ${i < WORKER.reviews_list.length - 1 ? 'border-b border-border' : ''}`}>
+                {WORKER.reviews_list.map((rev, i) =>
+                <div key={i} className={`pb-4 ${i < WORKER.reviews_list.length - 1 ? 'border-b border-border' : ''}`}>
                     <div className="flex items-center justify-between mb-1.5">
                       <p className="font-semibold text-sm text-foreground">{rev.name}</p>
                       <div className="flex items-center gap-1">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Star key={j} size={12} className={j < rev.rating ? 'text-warning fill-warning' : 'text-muted-foreground'} />
-                        ))}
+                        {Array.from({ length: 5 }).map((_, j) =>
+                      <Star key={j} size={12} className={j < rev.rating ? 'text-warning fill-warning' : 'text-muted-foreground'} />
+                      )}
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">{rev.date}</p>
                     <p className="text-sm text-foreground">{rev.comment}</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -457,14 +457,14 @@ export default function LabourDetailPage() {
               <button
                 onClick={() => setStep('form')}
                 disabled={!WORKER.available}
-                className="w-full btn-primary py-3.5 rounded-xl font-bold text-base mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+                className="w-full btn-primary py-3.5 rounded-xl font-bold text-base mb-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                
                 {WORKER.available ? 'Send Hire Request' : 'Currently Unavailable'}
               </button>
 
               <div className="grid grid-cols-2 gap-2">
                 <a href={`tel:+919876543210`}
-                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border hover:bg-muted transition-colors text-sm font-semibold text-foreground">
+                className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border hover:bg-muted transition-colors text-sm font-semibold text-foreground">
                   <Phone size={15} /> Call
                 </a>
                 <button className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border hover:bg-muted transition-colors text-sm font-semibold text-foreground">
@@ -482,6 +482,6 @@ export default function LabourDetailPage() {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>);
+
 }
