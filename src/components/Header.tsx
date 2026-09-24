@@ -252,7 +252,7 @@ export default function Header() {
                           <p className="text-xs text-muted-foreground truncate">{displayPhone}</p>
                         </>
                       ) : (
-                        <Link href="/sign-up-login-screen" onClick={() => setAccountOpen(false)} className="text-sm font-semibold text-primary hover:underline">
+                        <Link href="/login" onClick={() => setAccountOpen(false)} className="text-sm font-semibold text-primary hover:underline">
                           Sign In / Register
                         </Link>
                       )}
