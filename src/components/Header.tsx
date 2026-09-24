@@ -49,6 +49,7 @@ export default function Header() {
     { icon: Bell, label: t('notifications'), href: '/account/notifications' },
     { icon: Globe, label: t('changeLanguage'), href: '/account/language' },
     { icon: Store, label: t('supplierDashboard'), href: '/supplier/dashboard' },
+    { icon: Package, label: 'Supplier Operations', href: '/supplier/operations' },
     { icon: Package, label: 'My Listings', href: '/provider-equipment' },
     { icon: MapPin, label: 'Driver Availability', href: '/driver-availability' },
     { icon: MapPin, label: 'Select Service Area', href: '/location-selector' },
