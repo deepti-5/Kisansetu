@@ -4,35 +4,55 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { Mail, Lock, Eye, EyeOff, Loader2, Tractor, Wrench } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, Tractor, Wrench, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 type Role = 'farmer' | 'provider';
 
-export default function LoginPage() {
-  const { signIn } = useAuth();
+export default function SignupPage() {
+  const { signUp } = useAuth();
   const router = useRouter();
 
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<Role>('farmer');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      toast.error('Please enter your email and password');
+
+    if (!fullName.trim()) {
+      toast.error('Please enter your full name');
       return;
     }
+    if (!email.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
-      await signIn(email, password);
-      toast.success(`Welcome back! Signed in as ${role === 'farmer' ? 'Farmer' : 'Provider'} 🌾`);
+      await signUp(email, password, {
+        fullName,
+        role,
+      });
+      toast.success(`Account created! Welcome to KisanSetu 🌾`);
       setTimeout(() => router.push('/inbox'), 600);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Invalid email or password';
+      const msg = err instanceof Error ? err.message : 'Failed to create account. Please try again.';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -49,10 +69,10 @@ export default function LoginPage() {
             <AppLogo className="h-10 mx-auto" />
           </Link>
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
-            Sign in to KisanSetu
+            Create your KisanSetu account
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5">
-            Access your rental dashboard and notifications
+            Join thousands of farmers and equipment providers
           </p>
         </div>
 
@@ -89,8 +109,28 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Login form */}
-          <form onSubmit={handleLogin} className="space-y-4">
+          {/* Signup form */}
+          <form onSubmit={handleSignup} className="space-y-4">
+
+            {/* Full Name */}
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-1.5">
+                Full Name
+              </label>
+              <div className="relative">
+                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Your full name"
+                  className="input-field pl-9 text-sm w-full"
+                  autoComplete="name"
+                  required
+                />
+              </div>
+            </div>
+
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1.5">
@@ -112,24 +152,18 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-semibold text-foreground">Password</label>
-                <Link
-                  href="/sign-up-login-screen"
-                  className="text-xs text-primary font-medium hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <label className="block text-sm font-semibold text-foreground mb-1.5">
+                Password
+              </label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Min. 6 characters"
                   className="input-field pl-9 pr-10 text-sm w-full"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                 />
                 <button
@@ -143,6 +177,36 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter your password"
+                  className="input-field pl-9 pr-10 text-sm w-full"
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-xs text-destructive mt-1.5">Passwords do not match</p>
+              )}
+            </div>
+
             {/* Submit */}
             <button
               type="submit"
@@ -150,9 +214,9 @@ export default function LoginPage() {
               className="w-full btn-primary py-3 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
             >
               {loading ? (
-                <><Loader2 size={16} className="animate-spin" /> Signing in...</>
+                <><Loader2 size={16} className="animate-spin" /> Creating account...</>
               ) : (
-                `Sign in as ${role === 'farmer' ? 'Farmer' : 'Provider'}`
+                `Create ${role === 'farmer' ? 'Farmer' : 'Provider'} Account`
               )}
             </button>
           </form>
@@ -164,14 +228,14 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          {/* Sign-up link */}
+          {/* Login link */}
           <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{' '}
+            Already have an account?{' '}
             <Link
-              href="/signup"
+              href="/login"
               className="text-primary font-semibold hover:underline"
             >
-              Create one free
+              Sign in
             </Link>
           </p>
         </div>
