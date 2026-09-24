@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -8,21 +8,25 @@ import Link from 'next/link';
 import {
   CheckCircle, Calendar, MapPin, Phone, User, IndianRupee,
   Download, Share2, MessageCircle, Truck, Clock, AlertCircle,
-  ChevronRight, Copy, Star, ArrowLeft, Shield } from
+  ChevronRight, Copy, Star, ArrowLeft, Shield, Loader2, Wifi } from
 'lucide-react';
 import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
+import StripePaymentModal from '@/components/StripePaymentModal';
 
 interface BookingData {
-  id: string;equipment: string;category: string;image: string;
-  supplier: string;supplierPhone: string;supplierLocation: string;
-  farmer: string;farmerPhone: string;
-  startDate: string;endDate: string;days: number;
-  dailyRate: number;subtotal: number;deposit: number;
-  platformFee: number;totalAmount: number;amountPaid: number;
-  paymentStatus: 'paid' | 'partial' | 'pending';paymentMethod: string;
+  id: string; equipment: string; category: string; image: string;
+  supplier: string; supplierPhone: string; supplierLocation: string;
+  farmer: string; farmerPhone: string;
+  startDate: string; endDate: string; days: number;
+  dailyRate: number; subtotal: number; deposit: number;
+  platformFee: number; totalAmount: number; amountPaid: number;
+  paymentStatus: 'paid' | 'partial' | 'pending'; paymentMethod: string;
   status: 'confirmed' | 'rental_active' | 'returned';
-  meetingPoint: string;meetingTime: string;driverName?: string;driverPhone?: string;
-  nextPaymentDue?: string;nextPaymentAmount?: number;
+  meetingPoint: string; meetingTime: string; driverName?: string; driverPhone?: string;
+  nextPaymentDue?: string; nextPaymentAmount?: number;
+  dbId?: string;
+  buyerEmail?: string;
 }
 
 const BOOKING_DATA: Record<string, BookingData> = {
@@ -40,7 +44,6 @@ const BOOKING_DATA: Record<string, BookingData> = {
     meetingPoint: 'Hadapsar Chowk, Near SBI Bank, Pune',
     meetingTime: '7:00 AM on 20 Sep 2026',
     driverName: 'Ganesh Shinde', driverPhone: '+91 87654 32109',
-    nextPaymentDue: undefined, nextPaymentAmount: undefined
   },
   'BKG65890': {
     id: 'BKG65890', equipment: 'Paddy Transplanter 8-Row', category: 'Planting Equipment',
@@ -79,7 +82,189 @@ const DEFAULT_BOOKING = BOOKING_DATA['BKG82341'];
 function BookingConfirmationContent() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('id') || 'BKG82341';
-  const booking = BOOKING_DATA[bookingId] || DEFAULT_BOOKING;
+  const [booking, setBooking] = useState<BookingData>(BOOKING_DATA[bookingId] || DEFAULT_BOOKING);
+  const [liveStatus, setLiveStatus] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [clientSecret, setClientSecret] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+  const supabase = createClient();
+
+  // Load booking from Supabase if available
+  const loadBookingFromDB = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('booking_ref', bookingId)
+        .single();
+
+      if (error || !data) return;
+
+      setBooking({
+        id: data.booking_ref,
+        equipment: data.equipment_name,
+        category: data.equipment_category,
+        image: data.equipment_image || '',
+        supplier: data.supplier_name,
+        supplierPhone: data.supplier_phone,
+        supplierLocation: data.supplier_location,
+        farmer: data.buyer_name,
+        farmerPhone: data.buyer_phone,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        days: data.days,
+        dailyRate: data.daily_rate,
+        subtotal: data.subtotal,
+        deposit: data.deposit,
+        platformFee: data.platform_fee,
+        totalAmount: data.total_amount,
+        amountPaid: data.amount_paid,
+        paymentStatus: data.payment_status as 'paid' | 'partial' | 'pending',
+        paymentMethod: data.payment_method || '',
+        status: data.booking_status === 'active' ? 'rental_active' : data.booking_status === 'completed' ? 'returned' : 'confirmed',
+        meetingPoint: data.meeting_point || '',
+        meetingTime: data.meeting_time || '',
+        driverName: data.driver_name,
+        driverPhone: data.driver_phone,
+        dbId: data.id,
+        buyerEmail: undefined,
+      });
+    } catch (err) {
+      console.error('Error loading booking:', err);
+    }
+  }, [bookingId, supabase]);
+
+  // Real-time listener for booking status changes
+  useEffect(() => {
+    loadBookingFromDB();
+
+    const channel = supabase
+      .channel(`booking-${bookingId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `booking_ref=eq.${bookingId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Record<string, unknown>;
+          const newStatus = updated.booking_status as string;
+          const newPaymentStatus = updated.payment_status as string;
+
+          // Show live notification
+          if (newStatus === 'accepted') {
+            setLiveStatus('accepted');
+            toast.success('🎉 Your booking has been accepted by the supplier!');
+          } else if (newStatus === 'declined') {
+            setLiveStatus('declined');
+            toast.error('Your booking was declined. Please try another equipment.');
+          } else if (newPaymentStatus === 'paid') {
+            toast.success('✅ Payment confirmed!');
+          }
+
+          // Update booking state
+          setBooking((prev) => ({
+            ...prev,
+            paymentStatus: newPaymentStatus as 'paid' | 'partial' | 'pending',
+            amountPaid: (updated.amount_paid as number) || prev.amountPaid,
+            status: newStatus === 'active' ? 'rental_active' : newStatus === 'completed' ? 'returned' : 'confirmed',
+          }));
+        }
+      )
+      .subscribe((status) => {
+        setIsConnected(status === 'SUBSCRIBED');
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [bookingId, loadBookingFromDB, supabase]);
+
+  async function initiatePayment(amount: number) {
+    setIsInitiatingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+        body: {
+          paymentData: {
+            amount,
+            description: `KisanSetu Rental - ${booking.equipment} (${booking.id})`,
+            equipmentName: booking.equipment,
+          },
+          customerInfo: {
+            userId: null,
+            firstName: booking.farmer.split(' ')[0] || 'Farmer',
+            lastName: booking.farmer.split(' ').slice(1).join(' ') || '',
+            email: booking.buyerEmail || 'farmer@kisansetu.in',
+            phone: booking.farmerPhone,
+            stripeCustomerId: null,
+            billing: {
+              address_line_1: booking.supplierLocation || 'India',
+              city: 'Pune',
+              state: 'Maharashtra',
+              postal_code: '411001',
+              country: 'IN',
+            },
+          },
+          bookingId: booking.dbId || null,
+        },
+      });
+
+      if (error) {
+        const errMsg = (data as { error?: string })?.error ?? error.message ?? 'Payment setup failed';
+        toast.error(errMsg);
+        return;
+      }
+
+      setClientSecret(data.clientSecret);
+      setPaymentAmount(amount);
+      setPaymentModalOpen(true);
+    } catch (err) {
+      console.error('Payment initiation error:', err);
+      toast.error('Could not initiate payment. Please try again.');
+    } finally {
+      setIsInitiatingPayment(false);
+    }
+  }
+
+  async function handlePaymentSuccess() {
+    setPaymentModalOpen(false);
+    setClientSecret('');
+
+    // Send payment receipt email
+    try {
+      await supabase.functions.invoke('send-booking-email', {
+        body: {
+          type: 'payment_receipt',
+          buyerEmail: booking.buyerEmail || 'farmer@kisansetu.in',
+          bookingRef: booking.id,
+          equipmentName: booking.equipment,
+          supplierName: booking.supplier,
+          supplierPhone: booking.supplierPhone,
+          buyerName: booking.farmer,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          days: booking.days,
+          dailyRate: booking.dailyRate,
+          subtotal: booking.subtotal,
+          deposit: booking.deposit,
+          platformFee: booking.platformFee,
+          totalAmount: booking.totalAmount,
+          amountPaid: paymentAmount,
+          paymentMethod: 'Stripe',
+        },
+      });
+    } catch (err) {
+      console.error('Email send error:', err);
+    }
+
+    // Reload booking data
+    await loadBookingFromDB();
+    toast.success('Payment confirmed! Receipt sent to your email.');
+  }
 
   function copyBookingId() {
     if (typeof navigator !== 'undefined') {
@@ -94,6 +279,7 @@ function BookingConfirmationContent() {
   };
 
   const sc = statusConfig[booking.status];
+  const remainingAmount = booking.totalAmount - booking.amountPaid;
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,6 +294,16 @@ function BookingConfirmationContent() {
           <span className="text-foreground font-medium">Booking Confirmation</span>
         </div>
 
+        {/* Live Status Banner */}
+        {liveStatus && (
+          <div className={`rounded-xl border p-3 mb-4 flex items-center gap-3 ${liveStatus === 'accepted' ? 'bg-success/10 border-success/20' : 'bg-danger/10 border-danger/20'}`}>
+            <Wifi size={16} className={liveStatus === 'accepted' ? 'text-success' : 'text-danger'} />
+            <p className="text-sm font-semibold">
+              {liveStatus === 'accepted' ? '🎉 Supplier accepted your booking!' : '❌ Supplier declined your booking.'}
+            </p>
+          </div>
+        )}
+
         {/* Success Banner */}
         <div className={`rounded-2xl border p-5 mb-6 ${sc.bg}`}>
           <div className="flex items-center gap-4">
@@ -116,7 +312,15 @@ function BookingConfirmationContent() {
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-extrabold text-foreground">{sc.label}!</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Your booking has been successfully processed</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-sm text-muted-foreground">Your booking has been successfully processed</p>
+                {isConnected && (
+                  <span className="flex items-center gap-1 text-xs text-success font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                    Live
+                  </span>
+                )}
+              </div>
             </div>
             <div className="text-right hidden sm:block">
               <p className="text-xs text-muted-foreground">Booking ID</p>
@@ -140,7 +344,9 @@ function BookingConfirmationContent() {
             <div className="bg-card rounded-2xl border border-border p-5">
               <h2 className="font-bold text-base text-foreground mb-4">Equipment Details</h2>
               <div className="flex items-start gap-4">
-                <img src={booking.image} alt={booking.equipment} className="w-24 h-24 rounded-xl object-cover shrink-0" />
+                {booking.image && (
+                  <img src={booking.image} alt={booking.equipment} className="w-24 h-24 rounded-xl object-cover shrink-0" />
+                )}
                 <div className="flex-1">
                   <p className="font-bold text-foreground">{booking.equipment}</p>
                   <p className="text-sm text-muted-foreground">{booking.category}</p>
@@ -215,7 +421,7 @@ function BookingConfirmationContent() {
                   <p className={`font-bold text-sm ${booking.paymentStatus === 'paid' ? 'text-success' : 'text-warning'}`}>
                     {booking.paymentStatus === 'paid' ? 'Fully Paid' : booking.paymentStatus === 'partial' ? 'Partially Paid' : 'Payment Pending'}
                   </p>
-                  <p className="text-xs text-muted-foreground">via {booking.paymentMethod}</p>
+                  {booking.paymentMethod && <p className="text-xs text-muted-foreground">via {booking.paymentMethod}</p>}
                 </div>
                 <div className="ml-auto text-right">
                   <p className="font-bold text-foreground">₹{booking.amountPaid.toLocaleString('en-IN')}</p>
@@ -223,16 +429,55 @@ function BookingConfirmationContent() {
                 </div>
               </div>
 
-              {booking.paymentStatus === 'partial' && booking.nextPaymentDue &&
-              <div className="bg-warning/5 border border-warning/20 rounded-xl p-4">
+              {/* Pay Now for pending/partial */}
+              {booking.paymentStatus !== 'paid' && remainingAmount > 0 && (
+                <div className="bg-warning/5 border border-warning/20 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Clock size={14} className="text-warning" />
-                    <p className="font-bold text-sm text-foreground">Payment Due</p>
+                    <p className="font-bold text-sm text-foreground">
+                      {booking.paymentStatus === 'pending' ? 'Payment Required' : 'Remaining Payment Due'}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">Remaining amount of <span className="font-bold text-warning">₹{booking.nextPaymentAmount?.toLocaleString('en-IN')}</span> is due on <span className="font-bold text-foreground">{booking.nextPaymentDue}</span></p>
-                  <button className="mt-3 w-full btn-primary py-2.5 rounded-xl text-sm font-semibold">Pay Now ₹{booking.nextPaymentAmount?.toLocaleString('en-IN')}</button>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {booking.paymentStatus === 'pending'
+                      ? `Pay the full amount of `
+                      : `Remaining amount of `}
+                    <span className="font-bold text-warning">₹{remainingAmount.toLocaleString('en-IN')}</span>
+                    {booking.nextPaymentDue ? ` is due on ${booking.nextPaymentDue}` : ' to confirm your booking'}
+                  </p>
+                  <button
+                    onClick={() => initiatePayment(remainingAmount)}
+                    disabled={isInitiatingPayment}
+                    className="w-full btn-primary py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {isInitiatingPayment ? (
+                      <><Loader2 size={14} className="animate-spin" /> Setting up payment...</>
+                    ) : (
+                      <>Pay Now ₹{remainingAmount.toLocaleString('en-IN')}</>
+                    )}
+                  </button>
                 </div>
-              }
+              )}
+
+              {/* Pay deposit for new bookings */}
+              {booking.paymentStatus === 'pending' && booking.deposit > 0 && (
+                <div className="mt-3 bg-primary/5 border border-primary/20 rounded-xl p-4">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Or pay just the <span className="font-bold text-primary">deposit of ₹{booking.deposit.toLocaleString('en-IN')}</span> to secure your booking
+                  </p>
+                  <button
+                    onClick={() => initiatePayment(booking.deposit)}
+                    disabled={isInitiatingPayment}
+                    className="w-full py-2.5 rounded-xl border border-primary text-primary text-sm font-semibold hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {isInitiatingPayment ? (
+                      <><Loader2 size={14} className="animate-spin" /> Setting up...</>
+                    ) : (
+                      <>Pay Deposit ₹{booking.deposit.toLocaleString('en-IN')}</>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -251,8 +496,8 @@ function BookingConfirmationContent() {
                   </div>
                 </div>
 
-                {booking.driverName &&
-                <div className="flex gap-3">
+                {booking.driverName && (
+                  <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0 text-white text-xs font-bold">2</div>
                     <div>
                       <p className="font-semibold text-sm text-foreground">Driver Details</p>
@@ -260,7 +505,7 @@ function BookingConfirmationContent() {
                       <p className="text-xs font-semibold text-primary mt-1">{booking.driverPhone}</p>
                     </div>
                   </div>
-                }
+                )}
 
                 <div className="flex gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold ${booking.driverName ? 'bg-success' : 'bg-accent'}`}>{booking.driverName ? '3' : '2'}</div>
@@ -305,11 +550,11 @@ function BookingConfirmationContent() {
                 <button onClick={() => toast.success('Booking details shared!')} className="w-full flex items-center gap-3 py-2.5 px-4 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition-colors">
                   <Share2 size={15} className="text-accent" /> Share Booking
                 </button>
-                {booking.status === 'returned' &&
-                <button className="w-full flex items-center gap-3 py-2.5 px-4 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition-colors">
+                {booking.status === 'returned' && (
+                  <button className="w-full flex items-center gap-3 py-2.5 px-4 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition-colors">
                     <Star size={15} className="text-warning" /> Write Review
                   </button>
-                }
+                )}
               </div>
             </div>
 
@@ -321,18 +566,31 @@ function BookingConfirmationContent() {
         </div>
       </main>
       <Footer />
-    </div>);
 
+      {/* Stripe Payment Modal */}
+      <StripePaymentModal
+        isOpen={paymentModalOpen}
+        clientSecret={clientSecret}
+        amount={paymentAmount}
+        bookingRef={booking.id}
+        onSuccess={handlePaymentSuccess}
+        onClose={() => {
+          setPaymentModalOpen(false);
+          setClientSecret('');
+        }}
+      />
+    </div>
+  );
 }
 
 export default function BookingConfirmationPage() {
   return (
     <Suspense fallback={
-    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center"><div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-3" /><p className="text-sm text-muted-foreground">Loading booking details...</p></div>
       </div>
     }>
       <BookingConfirmationContent />
-    </Suspense>);
-
+    </Suspense>
+  );
 }
