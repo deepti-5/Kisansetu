@@ -35,16 +35,23 @@ export default function AuthScreen() {
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [selectedRole, setSelectedRole] = useState('farmer');
+
+  // Login OTP state
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [otpTimer, setOtpTimer] = useState(0);
   const [loadingOtp, setLoadingOtp] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [otpError, setOtpError] = useState('');
+
+  // Signup OTP state
   const [signupOtpSent, setSignupOtpSent] = useState(false);
   const [signupOtpVerified, setSignupOtpVerified] = useState(false);
   const [signupOtpDigits, setSignupOtpDigits] = useState(['', '', '', '', '', '']);
   const [signupOtpTimer, setSignupOtpTimer] = useState(0);
+  const [signupOtpError, setSignupOtpError] = useState('');
+  const [loadingSignupOtp, setLoadingSignupOtp] = useState(false);
 
   const loginForm = useForm<LoginFormData>();
   const signupForm = useForm<SignupFormData>({ defaultValues: { role: 'farmer' } });
@@ -56,32 +63,160 @@ export default function AuthScreen() {
     }, 1000);
   }
 
-  function handleSendOtp() {
+  // ── Send OTP (Login) ──────────────────────────────────────────────────────
+  async function handleSendOtp() {
     const phone = loginForm.getValues('phone');
-    if (!phone || phone.length < 10) { loginForm.setError('phone', { message: 'Enter a valid 10-digit mobile number' }); return; }
+    if (!phone || !/^\d{10}$/.test(phone)) {
+      loginForm.setError('phone', { message: 'Enter a valid 10-digit mobile number' });
+      return;
+    }
     setLoadingOtp(true);
-    setTimeout(() => { setLoadingOtp(false); setOtpSent(true); startTimer(setOtpTimer); toast.success('OTP sent to +91 ' + phone + ' (DEMO: use 123456)'); }, 1500);
+    setOtpError('');
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to send OTP');
+        setOtpError(data.error || 'Failed to send OTP');
+      } else {
+        setOtpSent(true);
+        setOtpDigits(['', '', '', '', '', '']);
+        startTimer(setOtpTimer);
+        toast.success(`OTP sent to +91 ${phone}`);
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setLoadingOtp(false);
+    }
   }
 
-  function handleOtpInput(index: number, value: string) {
+  // ── Verify OTP digit input (Login) ────────────────────────────────────────
+  async function handleOtpInput(index: number, value: string) {
     if (!/^\d?$/.test(value)) return;
-    const next = [...otpDigits]; next[index] = value; setOtpDigits(next);
-    if (value && index < 5) { document.getElementById(`otp-${index + 1}`)?.focus(); }
-    if (next.every((d) => d) && next.join('') === '123456') { setOtpVerified(true); toast.success('OTP verified successfully!'); }
+    const next = [...otpDigits];
+    next[index] = value;
+    setOtpDigits(next);
+    setOtpError('');
+
+    if (value && index < 5) {
+      document.getElementById(`otp-${index + 1}`)?.focus();
+    }
+
+    // Auto-verify when all 6 digits entered
+    if (next.every((d) => d !== '')) {
+      const enteredOtp = next.join('');
+      await verifyLoginOtp(enteredOtp);
+    }
   }
 
-  function handleSignupOtpInput(index: number, value: string) {
-    if (!/^\d?$/.test(value)) return;
-    const next = [...signupOtpDigits]; next[index] = value; setSignupOtpDigits(next);
-    if (value && index < 5) { document.getElementById(`sotp-${index + 1}`)?.focus(); }
-    if (next.every((d) => d) && next.join('') === '123456') { setSignupOtpVerified(true); toast.success('Phone verified!'); }
+  async function verifyLoginOtp(enteredOtp: string) {
+    const phone = loginForm.getValues('phone') || '';
+    try {
+      const res = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp: enteredOtp }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOtpVerified(true);
+        setOtpError('');
+        toast.success('OTP verified successfully!');
+      } else {
+        setOtpError(data.error || 'Incorrect OTP');
+        // Clear digits on wrong OTP
+        setOtpDigits(['', '', '', '', '', '']);
+        document.getElementById('otp-0')?.focus();
+        if (data.error?.includes('Too many') || data.error?.includes('expired')) {
+          setOtpSent(false);
+          setOtpDigits(['', '', '', '', '', '']);
+        }
+      }
+    } catch {
+      setOtpError('Verification failed. Please try again.');
+    }
   }
 
-  function handleSendSignupOtp() {
+  // ── Send OTP (Signup) ─────────────────────────────────────────────────────
+  async function handleSendSignupOtp() {
     const phone = signupForm.getValues('phone');
-    if (!phone || phone.length < 10) { signupForm.setError('phone', { message: 'Enter a valid 10-digit mobile number' }); return; }
-    setLoadingOtp(true);
-    setTimeout(() => { setLoadingOtp(false); setSignupOtpSent(true); startTimer(setSignupOtpTimer); toast.success('OTP sent! DEMO: use 123456'); }, 1500);
+    if (!phone || !/^\d{10}$/.test(phone)) {
+      signupForm.setError('phone', { message: 'Enter a valid 10-digit mobile number' });
+      return;
+    }
+    setLoadingSignupOtp(true);
+    setSignupOtpError('');
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to send OTP');
+        setSignupOtpError(data.error || 'Failed to send OTP');
+      } else {
+        setSignupOtpSent(true);
+        setSignupOtpDigits(['', '', '', '', '', '']);
+        startTimer(setSignupOtpTimer);
+        toast.success(`OTP sent to +91 ${phone}`);
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setLoadingSignupOtp(false);
+    }
+  }
+
+  // ── Verify OTP digit input (Signup) ───────────────────────────────────────
+  async function handleSignupOtpInput(index: number, value: string) {
+    if (!/^\d?$/.test(value)) return;
+    const next = [...signupOtpDigits];
+    next[index] = value;
+    setSignupOtpDigits(next);
+    setSignupOtpError('');
+
+    if (value && index < 5) {
+      document.getElementById(`sotp-${index + 1}`)?.focus();
+    }
+
+    if (next.every((d) => d !== '')) {
+      const enteredOtp = next.join('');
+      await verifySignupOtp(enteredOtp);
+    }
+  }
+
+  async function verifySignupOtp(enteredOtp: string) {
+    const phone = signupForm.getValues('phone') || '';
+    try {
+      const res = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp: enteredOtp }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSignupOtpVerified(true);
+        setSignupOtpError('');
+        toast.success('Phone verified!');
+      } else {
+        setSignupOtpError(data.error || 'Incorrect OTP');
+        setSignupOtpDigits(['', '', '', '', '', '']);
+        document.getElementById('sotp-0')?.focus();
+        if (data.error?.includes('Too many') || data.error?.includes('expired')) {
+          setSignupOtpSent(false);
+          setSignupOtpDigits(['', '', '', '', '', '']);
+        }
+      }
+    } catch {
+      setSignupOtpError('Verification failed. Please try again.');
+    }
   }
 
   function handleLoginSubmit(data: LoginFormData) {
@@ -102,10 +237,11 @@ export default function AuthScreen() {
       }
       toast.success('Login successful! Redirecting...');
       setTimeout(() => { window.location.href = '/'; }, 1000);
-    }, 1800);
+    }, 800);
   }
 
   function handleSignupSubmit(data: SignupFormData) {
+    if (!signupOtpVerified) { toast.error('Please verify your phone number first'); return; }
     if (data.password !== data.confirmPassword) { signupForm.setError('confirmPassword', { message: 'Passwords do not match' }); return; }
     setLoadingSubmit(true);
     setTimeout(() => {
@@ -120,7 +256,7 @@ export default function AuthScreen() {
       localStorage.setItem('kisansetu_current_user', JSON.stringify(newUser));
       toast.success('Account created! Welcome to KisanSetu 🌾');
       setTimeout(() => { window.location.href = '/'; }, 1200);
-    }, 2000);
+    }, 1200);
   }
 
   function autofillDemo(email: string, password: string) {
@@ -206,22 +342,50 @@ export default function AuthScreen() {
                         {loginForm.formState.errors.phone && <p className="text-danger text-xs mt-1">{loginForm.formState.errors.phone.message}</p>}
                       </div>
                       {!otpSent ? (
-                        <button type="button" onClick={handleSendOtp} disabled={loadingOtp} className="w-full btn-primary py-3">
-                          {loadingOtp ? <><Loader2 size={16} className="animate-spin" /> Sending OTP...</> : 'Send OTP'}
+                        <button type="button" onClick={handleSendOtp} disabled={loadingOtp} className="w-full btn-primary py-3 flex items-center justify-center gap-2">
+                          {loadingOtp ? <><Loader2 size={16} className="animate-spin" /> Sending OTP...</> : 'Send OTP via SMS'}
                         </button>
                       ) : (
                         <div>
-                          <label className="block text-sm font-semibold text-foreground mb-1.5">Enter 6-digit OTP {otpVerified && <CheckCircle size={14} className="inline ml-2 text-success" />}</label>
+                          <label className="block text-sm font-semibold text-foreground mb-1.5">
+                            Enter 6-digit OTP {otpVerified && <CheckCircle size={14} className="inline ml-2 text-success" />}
+                          </label>
+                          <p className="text-xs text-muted-foreground mb-2">OTP sent to +91 {loginForm.getValues('phone')} via SMS</p>
                           <div className="flex gap-2 mb-2">
                             {otpDigits.map((digit, i) => (
-                              <input key={`otp-box-${i}`} id={`otp-${i}`} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={(e) => handleOtpInput(i, e.target.value)} className={`w-full h-12 text-center text-lg font-bold rounded-lg border transition-all duration-150 outline-none ${otpVerified ? 'border-success bg-success-bg text-success' : 'border-input bg-white focus:border-primary focus:ring-2 focus:ring-ring'}`} />
+                              <input
+                                key={`otp-box-${i}`}
+                                id={`otp-${i}`}
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => handleOtpInput(i, e.target.value)}
+                                className={`w-full h-12 text-center text-lg font-bold rounded-lg border transition-all duration-150 outline-none ${
+                                  otpVerified
+                                    ? 'border-success bg-success-bg text-success'
+                                    : otpError
+                                    ? 'border-danger bg-danger-bg' :'border-input bg-white focus:border-primary focus:ring-2 focus:ring-ring'
+                                }`}
+                              />
                             ))}
                           </div>
+                          {otpError && <p className="text-danger text-xs mb-2">{otpError}</p>}
                           <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-                            <span>DEMO OTP: 123456</span>
-                            {otpTimer > 0 ? <span>Resend in {otpTimer}s</span> : <button type="button" onClick={() => { setOtpDigits(['', '', '', '', '', '']); handleSendOtp(); }} className="flex items-center gap-1 text-primary font-semibold"><RefreshCw size={11} /> Resend OTP</button>}
+                            <span>OTP expires in 10 minutes</span>
+                            {otpTimer > 0 ? (
+                              <span>Resend in {otpTimer}s</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => { setOtpDigits(['', '', '', '', '', '']); setOtpError(''); handleSendOtp(); }}
+                                className="flex items-center gap-1 text-primary font-semibold"
+                              >
+                                <RefreshCw size={11} /> Resend OTP
+                              </button>
+                            )}
                           </div>
-                          <button type="submit" disabled={!otpVerified || loadingSubmit} className="w-full btn-primary py-3">
+                          <button type="submit" disabled={!otpVerified || loadingSubmit} className="w-full btn-primary py-3 flex items-center justify-center gap-2">
                             {loadingSubmit ? <><Loader2 size={16} className="animate-spin" /> Logging in...</> : 'Login'}
                           </button>
                         </div>
@@ -253,7 +417,7 @@ export default function AuthScreen() {
                         <input type="checkbox" id="remember" className="w-4 h-4 rounded accent-primary" />
                         <label htmlFor="remember" className="text-sm text-muted-foreground">Remember me for 30 days</label>
                       </div>
-                      <button type="submit" disabled={loadingSubmit} className="w-full btn-primary py-3">
+                      <button type="submit" disabled={loadingSubmit} className="w-full btn-primary py-3 flex items-center justify-center gap-2">
                         {loadingSubmit ? <><Loader2 size={16} className="animate-spin" /> Logging in...</> : 'Login'}
                       </button>
                     </>
@@ -296,8 +460,13 @@ export default function AuthScreen() {
                     <div className="flex gap-2">
                       <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-input bg-muted text-sm font-medium shrink-0">🇮🇳 +91</div>
                       <input type="tel" maxLength={10} placeholder="98765 43210" className="input-field flex-1" {...signupForm.register('phone', { required: 'Mobile number is required', pattern: { value: /^\d{10}$/, message: 'Enter 10-digit number' } })} />
-                      <button type="button" onClick={handleSendSignupOtp} disabled={loadingOtp || signupOtpVerified} className={`px-3 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all btn-press ${signupOtpVerified ? 'bg-success-bg text-success border border-success' : 'gradient-green text-white hover:opacity-90'}`}>
-                        {signupOtpVerified ? <CheckCircle size={14} /> : loadingOtp ? <Loader2 size={14} className="animate-spin" /> : 'Send OTP'}
+                      <button
+                        type="button"
+                        onClick={handleSendSignupOtp}
+                        disabled={loadingSignupOtp || signupOtpVerified}
+                        className={`px-3 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all btn-press ${signupOtpVerified ? 'bg-success-bg text-success border border-success' : 'gradient-green text-white hover:opacity-90'}`}
+                      >
+                        {signupOtpVerified ? <CheckCircle size={14} /> : loadingSignupOtp ? <Loader2 size={14} className="animate-spin" /> : 'Send OTP'}
                       </button>
                     </div>
                     {signupForm.formState.errors.phone && <p className="text-danger text-xs mt-1">{signupForm.formState.errors.phone.message}</p>}
@@ -306,14 +475,38 @@ export default function AuthScreen() {
                   {signupOtpSent && !signupOtpVerified && (
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-1.5">Enter 6-digit OTP</label>
+                      <p className="text-xs text-muted-foreground mb-2">OTP sent to +91 {signupForm.getValues('phone')} via SMS</p>
                       <div className="flex gap-2 mb-1.5">
                         {signupOtpDigits.map((digit, i) => (
-                          <input key={`sotp-box-${i}`} id={`sotp-${i}`} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={(e) => handleSignupOtpInput(i, e.target.value)} className="w-full h-11 text-center text-lg font-bold rounded-lg border border-input bg-white focus:border-primary focus:ring-2 focus:ring-ring outline-none transition-all" />
+                          <input
+                            key={`sotp-box-${i}`}
+                            id={`sotp-${i}`}
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={1}
+                            value={digit}
+                            onChange={(e) => handleSignupOtpInput(i, e.target.value)}
+                            className={`w-full h-11 text-center text-lg font-bold rounded-lg border outline-none transition-all ${
+                              signupOtpError
+                                ? 'border-danger bg-danger-bg' :'border-input bg-white focus:border-primary focus:ring-2 focus:ring-ring'
+                            }`}
+                          />
                         ))}
                       </div>
+                      {signupOtpError && <p className="text-danger text-xs mb-1">{signupOtpError}</p>}
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>DEMO OTP: 123456</span>
-                        {signupOtpTimer > 0 ? <span>Resend in {signupOtpTimer}s</span> : <button type="button" onClick={handleSendSignupOtp} className="text-primary font-semibold flex items-center gap-1"><RefreshCw size={11} /> Resend</button>}
+                        <span>OTP expires in 10 minutes</span>
+                        {signupOtpTimer > 0 ? (
+                          <span>Resend in {signupOtpTimer}s</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => { setSignupOtpDigits(['', '', '', '', '', '']); setSignupOtpError(''); handleSendSignupOtp(); }}
+                            className="text-primary font-semibold flex items-center gap-1"
+                          >
+                            <RefreshCw size={11} /> Resend
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -367,9 +560,12 @@ export default function AuthScreen() {
                     </label>
                   </div>
 
-                  <button type="submit" disabled={loadingSubmit} className="w-full btn-primary py-3">
+                  <button type="submit" disabled={loadingSubmit || !signupOtpVerified} className="w-full btn-primary py-3 flex items-center justify-center gap-2 disabled:opacity-60">
                     {loadingSubmit ? <><Loader2 size={16} className="animate-spin" /> Creating Account...</> : 'Create Account'}
                   </button>
+                  {!signupOtpVerified && (
+                    <p className="text-xs text-muted-foreground text-center">Verify your phone number to create account</p>
+                  )}
                 </form>
                 <p className="text-center text-sm text-muted-foreground mt-4">Already have an account? <button onClick={() => setTab('login')} className="text-primary font-semibold hover:underline">Login</button></p>
               </div>
@@ -379,7 +575,7 @@ export default function AuthScreen() {
               <div className="flex items-center gap-2 mb-3">
                 <Shield size={14} className="text-primary" />
                 <p className="text-xs font-bold text-foreground uppercase tracking-wider">Demo Accounts</p>
-                <span className="badge-amber text-xs ml-auto">DEMO MODE</span>
+                <span className="badge-amber text-xs ml-auto">EMAIL LOGIN</span>
               </div>
               <div className="space-y-2">
                 {DEMO_ACCOUNTS.map((acc) => (
@@ -395,7 +591,7 @@ export default function AuthScreen() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">OTP: <span className="font-bold font-tabular">123456</span> for all demo accounts</p>
+              <p className="text-xs text-muted-foreground mt-2 text-center">Phone OTP login sends a real SMS via Twilio</p>
             </div>
           </div>
         </div>
