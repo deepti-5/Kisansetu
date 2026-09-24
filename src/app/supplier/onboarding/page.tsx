@@ -11,9 +11,14 @@ type Step = 1 | 2 | 3 | 4;
 const STEPS = [{ num: 1, label: 'Personal Info', icon: User }, { num: 2, label: 'Business Details', icon: Store }, { num: 3, label: 'Documents', icon: FileText }, { num: 4, label: 'Review & Submit', icon: CheckCircle }];
 const EQUIPMENT_CATEGORIES = [{ id: 'tractor', label: 'Tractors', icon: Tractor }, { id: 'harvester', label: 'Harvesters', icon: Package }, { id: 'irrigation', label: 'Irrigation', icon: Sprout }, { id: 'tillage', label: 'Tillage', icon: Wrench }, { id: 'sprayer', label: 'Sprayers', icon: Package }, { id: 'planting', label: 'Planting', icon: Sprout }];
 
+function generateApplicationId() {
+  return 'SUP-' + Math.floor(100000 + Math.random() * 900000);
+}
+
 export default function SupplierOnboarding() {
   const [step, setStep] = useState<Step>(1);
   const [submitted, setSubmitted] = useState(false);
+  const [applicationId] = useState(() => generateApplicationId());
   const [personal, setPersonal] = useState({ fullName: '', phone: '', email: '', aadhaar: '', pan: '', city: '', state: '', pincode: '' });
   const [business, setBusiness] = useState({ businessName: '', businessType: 'individual', categories: [] as string[], description: '' });
   const [docs, setDocs] = useState({ aadhaarUploaded: false, panUploaded: false, bankProofUploaded: false, photoUploaded: false });
@@ -27,7 +32,7 @@ export default function SupplierOnboarding() {
           <h1 className="text-2xl font-extrabold text-foreground mb-2">Application Submitted!</h1>
           <p className="text-muted-foreground mb-6">Your supplier application is under review. We&apos;ll activate your account within <strong>24–48 hours</strong>.</p>
           <div className="bg-card border border-border rounded-2xl p-5 text-left mb-6 space-y-3">
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Application ID</span><span className="font-bold text-foreground">SUP-{Math.floor(100000 + Math.random() * 900000)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Application ID</span><span className="font-bold text-foreground">{applicationId}</span></div>
             <div className="flex justify-between text-sm"><span className="text-muted-foreground">Name</span><span className="font-semibold text-foreground">{personal.fullName || 'Rajesh Patil'}</span></div>
             <div className="flex justify-between text-sm"><span className="text-muted-foreground">Status</span><span className="font-bold text-warning">Under Review</span></div>
           </div>

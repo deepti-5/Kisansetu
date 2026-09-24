@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AppImage from '@/components/ui/AppImage';
+import Link from 'next/link';
 import { Search, X, MapPin, Star, Heart, Phone, UserCheck, Zap } from 'lucide-react';
 
 interface Labour {id: string;name: string;role: string;image: string;imageAlt: string;ratePerDay: number;rating: number;reviews: number;location: string;distance: number;skills: string[];experience: string;available: boolean;category: string;phone: string;}
@@ -113,9 +114,9 @@ export default function LabourPage() {
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground mb-4"><MapPin size={11} className="text-primary" />{person.location} · {person.distance} km</div>
                 <div className="grid grid-cols-2 gap-2">
-                  <a href={`/labour/${person.id}`} className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${person.available ? 'gradient-green text-white hover:opacity-90 btn-press' : 'bg-muted text-muted-foreground cursor-not-allowed pointer-events-none'}`}>
+                  <Link href={`/labour/${person.id}`} className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${person.available ? 'gradient-green text-white hover:opacity-90 btn-press' : 'bg-muted text-muted-foreground cursor-not-allowed pointer-events-none'}`}>
                     <UserCheck size={13} />{person.available ? 'Hire Now' : 'Unavailable'}
-                  </a>
+                  </Link>
                   <a href={`tel:${person.phone}`} className="btn-secondary text-xs py-2 gap-1.5 flex items-center justify-center"><Phone size={13} />Call</a>
                 </div>
               </div>

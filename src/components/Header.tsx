@@ -6,9 +6,14 @@ import AppLogo from '@/components/ui/AppLogo';
 import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check, MessageCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function Header() {
   const { t, language, setLanguage } = useLanguage();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const [accountOpen, setAccountOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -45,7 +50,6 @@ export default function Header() {
     { icon: MapPin, label: 'Select Service Area', href: '/location-selector' },
     { icon: HelpCircle, label: t('helpSupport'), href: '/help' },
     { icon: FileText, label: t('policies'), href: '/policies' },
-    { icon: LogOut, label: t('logout'), href: '/sign-up-login-screen', danger: true },
   ];
 
   function detectLocation() {
@@ -97,7 +101,23 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  async function handleLogout() {
+    try {
+      await signOut();
+      setAccountOpen(false);
+      setMobileOpen(false);
+      toast.success('Logged out successfully');
+      router.push('/sign-up-login-screen');
+    } catch {
+      toast.error('Failed to log out');
+    }
+  }
+
   const currentLang = SUPPORTED_LANGUAGES.find((l) => l.code === language);
+
+  // Derive display name and phone from auth user
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account';
+  const displayPhone = user?.user_metadata?.phone || (user?.email ? user.email : 'Sign in');
 
   return (
     <>
@@ -222,22 +242,35 @@ export default function Header() {
                 {accountOpen && (
                   <div className="absolute right-0 top-full mt-2 w-64 bg-card rounded-xl border border-border shadow-modal z-50 py-2 fade-in">
                     <div className="px-4 py-3 border-b border-border">
-                      <p className="font-semibold text-sm text-foreground">Johan Rame</p>
-                      <p className="text-xs text-muted-foreground">+91 98765 43210</p>
+                      {user ? (
+                        <>
+                          <p className="font-semibold text-sm text-foreground truncate">{displayName}</p>
+                          <p className="text-xs text-muted-foreground truncate">{displayPhone}</p>
+                        </>
+                      ) : (
+                        <Link href="/sign-up-login-screen" onClick={() => setAccountOpen(false)} className="text-sm font-semibold text-primary hover:underline">
+                          Sign In / Register
+                        </Link>
+                      )}
                     </div>
                     {ACCOUNT_MENU.map((item) => (
                       <Link
                         key={`acct-${item.href}`}
                         href={item.href}
                         onClick={() => setAccountOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors duration-150 hover:bg-muted ${
-                          (item as { danger?: boolean }).danger ? 'text-danger hover:bg-danger-bg' : 'text-foreground'
-                        }`}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors duration-150 hover:bg-muted text-foreground"
                       >
-                        <item.icon size={16} className={(item as { danger?: boolean }).danger ? 'text-danger' : 'text-muted-foreground'} />
+                        <item.icon size={16} className="text-muted-foreground" />
                         {item.label}
                       </Link>
                     ))}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors duration-150 hover:bg-danger/5 text-danger"
+                    >
+                      <LogOut size={16} className="text-danger" />
+                      {t('logout')}
+                    </button>
                   </div>
                 )}
               </div>
@@ -268,6 +301,12 @@ export default function Header() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto py-2">
+              {user && (
+                <div className="px-4 py-3 border-b border-border mb-2">
+                  <p className="font-semibold text-sm text-foreground truncate">{displayName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{displayPhone}</p>
+                </div>
+              )}
               <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('navigation')}</p>
               {NAV_LINKS.map((link) => (
                 <Link
@@ -287,14 +326,19 @@ export default function Header() {
                     key={`mob-acct-${item.href}`}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-muted ${
-                      (item as { danger?: boolean }).danger ? 'text-danger' : 'text-foreground'
-                    }`}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-muted text-foreground"
                   >
-                    <item.icon size={16} className={(item as { danger?: boolean }).danger ? 'text-danger' : 'text-muted-foreground'} />
+                    <item.icon size={16} className="text-muted-foreground" />
                     {item.label}
                   </Link>
                 ))}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-danger/5 text-danger"
+                >
+                  <LogOut size={16} className="text-danger" />
+                  {t('logout')}
+                </button>
               </div>
               {/* Mobile Language Switcher */}
               <div className="border-t border-border mt-2 pt-2 px-4 pb-4">
@@ -306,7 +350,7 @@ export default function Header() {
                       onClick={() => { setLanguage(lang.code); setMobileOpen(false); }}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                         language === lang.code
-                          ? 'border-primary bg-primary/5 text-primary' :'border-border text-foreground hover:border-primary/40'
+                          ? 'border-primary bg-primary/5 text-primary' : 'border-border text-foreground hover:border-primary/40'
                       }`}
                     >
                       <span>{lang.flag}</span>
