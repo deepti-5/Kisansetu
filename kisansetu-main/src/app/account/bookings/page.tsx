@@ -291,12 +291,12 @@ function BookingCard({ booking }: {booking: Booking;}) {
         {/* Equipment Image */}
         <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-muted">
           <img
-            src={booking.equipmentImage}
-            alt={`${booking.equipmentName} - ${booking.equipmentCategory} available for ${booking.type}`}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/assets/images/no_image.png';
-            }} />
+              src={booking.equipmentImage}
+              alt={`${booking.equipmentName} - ${booking.equipmentCategory} available for ${booking.type}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/assets/images/no_image.png';
+              }} />
         </div>
 
         {/* Info */}
@@ -309,7 +309,7 @@ function BookingCard({ booking }: {booking: Booking;}) {
               <p className="text-xs text-muted-foreground mt-0.5">{booking.equipmentCategory}</p>
             </div>
             <span
-              className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_COLORS[booking.status]}`}>
+                className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_COLORS[booking.status]}`}>
               {STATUS_LABELS[booking.status]}
             </span>
           </div>
@@ -321,12 +321,12 @@ function BookingCard({ booking }: {booking: Booking;}) {
               {booking.endDate && ` → ${booking.endDate}`}
             </span>
             {nights &&
-            <span className="text-xs text-muted-foreground">{nights} day{nights > 1 ? 's' : ''}</span>
-            }
+              <span className="text-xs text-muted-foreground">{nights} day{nights > 1 ? 's' : ''}</span>
+              }
             <span
-              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
-              booking.type === 'rental' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`
-              }>
+                className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
+                booking.type === 'rental' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`
+                }>
               {booking.type === 'rental' ? 'Rental' : 'Purchase'}
             </span>
           </div>
@@ -363,34 +363,34 @@ function BookingCard({ booking }: {booking: Booking;}) {
       {/* Action Buttons */}
       <div className="flex items-center gap-2 px-4 pb-4 pt-2 flex-wrap">
         {booking.canTrack &&
-        <button
-          suppressHydrationWarning
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
+          <button
+            suppressHydrationWarning
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors">
             <MapPin size={12} />
             Track Order
           </button>
-        }
+          }
         {booking.canReturn &&
-        <button
-          suppressHydrationWarning
-          onClick={() => { setReturnModal(true); setReturnStep('form'); setReturnReason(''); setOtpValue(''); setOtpError(false); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-warning text-warning text-xs font-semibold hover:bg-warning/10 transition-colors">
+          <button
+            suppressHydrationWarning
+            onClick={() => {setReturnModal(true);setReturnStep('form');setReturnReason('');setOtpValue('');setOtpError(false);}}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-warning text-warning text-xs font-semibold hover:bg-warning/10 transition-colors">
             <RotateCcw size={12} />
             Return Request
           </button>
-        }
+          }
         {booking.canReview &&
-        <button
-          suppressHydrationWarning
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors">
+          <button
+            suppressHydrationWarning
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors">
             <Star size={12} />
             Write Review
           </button>
-        }
+          }
         <button
-          suppressHydrationWarning
-          onClick={() => setExpanded(!expanded)}
-          className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            suppressHydrationWarning
+            onClick={() => setExpanded(!expanded)}
+            className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
           {expanded ? 'Less' : 'Details'}
           {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
         </button>
@@ -398,7 +398,7 @@ function BookingCard({ booking }: {booking: Booking;}) {
 
       {/* Expanded Details */}
       {expanded &&
-      <div className="border-t border-border px-4 py-4 space-y-3 bg-muted/20 fade-in">
+        <div className="border-t border-border px-4 py-4 space-y-3 bg-muted/20 fade-in">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Supplier</p>
@@ -416,38 +416,38 @@ function BookingCard({ booking }: {booking: Booking;}) {
               </p>
             </div>
             {booking.deposit &&
-          <div>
+            <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Security Deposit</p>
                 <p className="text-xs font-semibold text-foreground">₹{booking.deposit.toLocaleString('en-IN')}</p>
               </div>
-          }
+            }
             {booking.razorpayPaymentId &&
-          <div>
+            <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Payment ID</p>
                 <p className="text-xs font-mono text-foreground">{booking.razorpayPaymentId}</p>
               </div>
-          }
+            }
           </div>
           <div className="flex items-center gap-2 pt-1">
             <button
-            suppressHydrationWarning
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+              suppressHydrationWarning
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
               <MessageSquare size={12} />
               Contact Supplier
             </button>
             <button
-            suppressHydrationWarning
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+              suppressHydrationWarning
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
               <AlertCircle size={12} />
               Report Issue
             </button>
           </div>
         </div>
-      }
+        }
     </div>
 
     {/* Return Request Modal */}
-    {returnModal && (
+    {returnModal &&
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/50" onClick={() => setReturnModal(false)} />
         <div className="relative bg-card rounded-2xl shadow-modal w-full max-w-md p-6 fade-in">
@@ -460,16 +460,16 @@ function BookingCard({ booking }: {booking: Booking;}) {
             </button>
           </div>
 
-          {returnStep === 'form' && (
-            <div className="space-y-4">
+          {returnStep === 'form' &&
+          <div className="space-y-4">
               <div className="bg-muted/50 rounded-xl p-4 text-sm">
                 <p className="font-semibold text-foreground mb-1">{booking.equipmentName}</p>
                 <p className="text-muted-foreground">Booking ID: {booking.id}</p>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1.5">Reason for Return *</label>
-                <select value={returnReason} onChange={e => setReturnReason(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <select value={returnReason} onChange={(e) => setReturnReason(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
                   <option value="">Select reason</option>
                   <option value="work_completed">Work Completed</option>
                   <option value="equipment_issue">Equipment Issue</option>
@@ -482,14 +482,14 @@ function BookingCard({ booking }: {booking: Booking;}) {
                 Security deposit of ₹{booking.deposit?.toLocaleString('en-IN')} will be refunded within 3–5 business days after inspection.
               </div>
               <button onClick={handleReturnSubmit} disabled={!returnReason}
-                className="w-full btn-primary py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">
+            className="w-full btn-primary py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">
                 Proceed to OTP Verification
               </button>
             </div>
-          )}
+          }
 
-          {returnStep === 'otp' && (
-            <div className="space-y-4">
+          {returnStep === 'otp' &&
+          <div className="space-y-4">
               <div className="text-center py-2">
                 <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                   <Shield size={28} className="text-primary" />
@@ -499,25 +499,25 @@ function BookingCard({ booking }: {booking: Booking;}) {
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1.5 text-center">Enter Handover OTP</label>
                 <input
-                  type="text"
-                  maxLength={4}
-                  value={otpValue}
-                  onChange={e => { setOtpValue(e.target.value.replace(/\D/g, '')); setOtpError(false); }}
-                  placeholder="_ _ _ _"
-                  className={`w-full text-center text-2xl font-bold tracking-[0.5em] px-4 py-4 rounded-xl border-2 bg-background text-foreground focus:outline-none transition-colors ${otpError ? 'border-danger' : 'border-border focus:border-primary'}`}
-                />
+                type="text"
+                maxLength={4}
+                value={otpValue}
+                onChange={(e) => {setOtpValue(e.target.value.replace(/\D/g, ''));setOtpError(false);}}
+                placeholder="_ _ _ _"
+                className={`w-full text-center text-2xl font-bold tracking-[0.5em] px-4 py-4 rounded-xl border-2 bg-background text-foreground focus:outline-none transition-colors ${otpError ? 'border-danger' : 'border-border focus:border-primary'}`} />
+              
                 {otpError && <p className="text-xs text-danger text-center mt-1.5">Incorrect OTP. Please try again. (Hint: 1234)</p>}
               </div>
               <p className="text-xs text-muted-foreground text-center">Didn't receive OTP? <button className="text-primary font-semibold">Resend</button></p>
               <button onClick={handleOtpVerify} disabled={otpValue.length !== 4}
-                className="w-full btn-primary py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">
+            className="w-full btn-primary py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">
                 Verify & Confirm Handover
               </button>
             </div>
-          )}
+          }
 
-          {returnStep === 'success' && (
-            <div className="text-center py-4">
+          {returnStep === 'success' &&
+          <div className="text-center py-4">
               <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle size={32} className="text-success" />
               </div>
@@ -529,12 +529,12 @@ function BookingCard({ booking }: {booking: Booking;}) {
                 Done
               </button>
             </div>
-          )}
+          }
         </div>
       </div>
-    )}
-    </>
-  );
+      }
+    </>);
+
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────

@@ -40,11 +40,11 @@ export default function HeroSection() {
           );
           const data = await res.json();
           const city =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.village ||
-            data.address?.county ||
-            'Unknown';
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.village ||
+          data.address?.county ||
+          'Unknown';
           const state = data.address?.state || '';
           setLocation(state ? `${city}, ${state}` : city);
         } catch {
@@ -190,17 +190,17 @@ export default function HeroSection() {
 
             {/* Location */}
             <div className="flex items-center gap-2 mt-4">
-              {locationLoading ? (
-                <Loader2 size={14} className="text-accent animate-spin" />
-              ) : (
-                <MapPin size={14} className="text-accent" />
-              )}
+              {locationLoading ?
+              <Loader2 size={14} className="text-accent animate-spin" /> :
+
+              <MapPin size={14} className="text-accent" />
+              }
               <span className="text-white/80 text-sm">Showing results near</span>
               <button
                 suppressHydrationWarning
                 onClick={detectLocation}
-                className="text-accent text-sm font-semibold hover:underline flex items-center gap-1"
-              >
+                className="text-accent text-sm font-semibold hover:underline flex items-center gap-1">
+                
                 {locationLoading ? 'Detecting...' : location}
                 <span className="text-white/50">↓</span>
               </button>
