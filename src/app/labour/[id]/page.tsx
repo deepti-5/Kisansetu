@@ -5,8 +5,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AppImage from '@/components/ui/AppImage';
 import Link from 'next/link';
-import { Star, MapPin, Phone, Heart, ChevronLeft, CheckCircle, Shield, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Star, MapPin, Phone, Heart, ChevronLeft, CheckCircle, Shield, AlertTriangle, ChevronRight, MessageCircle } from 'lucide-react';
 import RazorpayCheckout from '@/components/RazorpayCheckout';
+import MessagingModal from '@/components/MessagingModal';
 
 const WORKER = {
   id: 'lab-001', name: 'Ramesh Yadav', role: 'Harvesting Worker',
@@ -23,6 +24,7 @@ type Step = 'details' | 'form' | 'confirm' | 'success';
 export default function LabourDetailPage() {
   const [step, setStep] = useState<Step>('details');
   const [wishlist, setWishlist] = useState(false);
+  const [messagingOpen, setMessagingOpen] = useState(false);
   const [form, setForm] = useState({ startDate: '', days: '1', workType: 'Harvesting', location: '', notes: '', workers: '1', contactName: '', contactPhone: '' });
   const [bookingId] = useState('LBR' + Math.floor(100000 + Math.random() * 900000));
 
@@ -200,12 +202,27 @@ export default function LabourDetailPage() {
               <button onClick={() => setStep('form')} disabled={!WORKER.available} className={`w-full py-3.5 rounded-xl font-bold text-base mb-3 ${WORKER.available ? 'btn-primary' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>
                 {WORKER.available ? 'Hire Now' : 'Currently Unavailable'}
               </button>
+              <button onClick={() => setMessagingOpen(true)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/10 border-2 border-primary/30 text-primary font-semibold hover:bg-primary/20 transition-colors mb-3">
+                <MessageCircle size={16} />Message Worker
+              </button>
               <a href={`tel:+911800123KISAN`} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-secondary transition-colors"><Phone size={16} />Call Worker</a>
             </div>
           </div>
         </div>
       </main>
       <Footer />
+
+      {/* Messaging Modal */}
+      <MessagingModal
+        isOpen={messagingOpen}
+        onClose={() => setMessagingOpen(false)}
+        listingType="labour"
+        listingId={WORKER.id}
+        listingName={`${WORKER.name} – ${WORKER.role}`}
+        listingImage={WORKER.image}
+        providerId={WORKER.id}
+        providerName={WORKER.name}
+      />
     </div>
   );
 }
