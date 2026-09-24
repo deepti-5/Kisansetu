@@ -57,11 +57,13 @@
         "@supabase/ssr": "0.6.1",
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/typography": "^0.5.16",
+        "leaflet": "1.9.4",
         "lucide-react": "^1.7.0",
         "next": "15.5.18",
         "react": "19.0.3",
         "react-dom": "19.0.3",
         "react-hook-form": "^7.85.0",
+        "react-leaflet": "5.0.0",
         "razorpay": "^2.9.6",
         "recharts": "^2.15.2",
         "sonner": "^1.7.4"
@@ -69,6 +71,7 @@
     "devDependencies": {
         "@eslint/eslintrc": "^3",
         "@netlify/plugin-nextjs": "^5.11.1",
+        "@types/leaflet": "1.9.22",
         "@types/node": "^20",
         "@types/react": "19.0.3",
         "@types/react-dom": "19.0.3",
