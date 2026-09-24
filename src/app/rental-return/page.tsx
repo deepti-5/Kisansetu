@@ -177,6 +177,31 @@ export default function RentalReturnPage() {
 
   async function handleRefundProcessed() {
     setEmailSending(true);
+    try {
+      // Attempt Stripe auto-refund via API
+      const refundRes = await fetch('/api/stripe/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: MOCK_BOOKING.id,
+          refundAmount,
+          reason: 'rental_return_deposit',
+          damageDeduction: totalDamageCost,
+          depositAmount: MOCK_BOOKING.deposit,
+        }),
+      });
+      const refundData = await refundRes.json();
+      if (refundData.success) {
+        if (refundData.method === 'stripe') {
+          toast.success(`Stripe refund initiated — ₹${refundAmount.toLocaleString('en-IN')}`);
+        } else {
+          toast.success('Refund recorded');
+        }
+      }
+    } catch {
+      // Non-blocking — continue even if Stripe refund fails
+    }
+
     await sendRentalEmail({
       type: 'refund_processed',
       ...MOCK_CONTACTS,

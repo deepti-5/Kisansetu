@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
-import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check, MessageCircle } from 'lucide-react';
+import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check, MessageCircle, Package } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +48,8 @@ export default function Header() {
     { icon: Bell, label: t('notifications'), href: '/account/notifications' },
     { icon: Globe, label: t('changeLanguage'), href: '/account/language' },
     { icon: Store, label: t('supplierDashboard'), href: '/supplier/dashboard' },
+    { icon: Package, label: 'My Listings', href: '/provider-equipment' },
+    { icon: MapPin, label: 'Driver Availability', href: '/driver-availability' },
     { icon: MapPin, label: 'Select Service Area', href: '/location-selector' },
     { icon: HelpCircle, label: t('helpSupport'), href: '/help' },
     { icon: FileText, label: t('policies'), href: '/policies' },
