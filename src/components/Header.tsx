@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
-import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check, MessageCircle, Package, Inbox } from 'lucide-react';
+import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check, MessageCircle, Package, Inbox, Tractor } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,6 +42,7 @@ export default function Header() {
   const ACCOUNT_MENU = [
     { icon: User, label: t('yourInfo'), href: '/account/profile' },
     { icon: ShoppingBag, label: t('bookings'), href: '/account/bookings' },
+    { icon: Tractor, label: 'My Rentals', href: '/farmer/rentals' },
     { icon: MessageCircle, label: 'Messages', href: '/messages' },
     { icon: Inbox, label: 'Notification Inbox', href: '/inbox' },
     { icon: CreditCard, label: t('payments'), href: '/account/payments' },
