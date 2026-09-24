@@ -64,10 +64,25 @@ async function sendRentalEmail(payload: Record<string, unknown>) {
   }
 }
 
+// ── SMS helper ────────────────────────────────────────────────────────────────
+async function sendRentalSms(payload: Record<string, unknown>) {
+  try {
+    await fetch('/api/rental-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // silent — SMS is non-blocking
+  }
+}
+
 // ── Mock contacts (in real app these come from booking/auth data) ─────────────
 const MOCK_CONTACTS = {
   farmerEmail: 'farmer@example.com',
   providerEmail: 'provider@example.com',
+  farmerPhone: '+919876543210',
+  providerPhone: '+919876543211',
 };
 
 export default function RentalReturnPage() {
@@ -103,10 +118,21 @@ export default function RentalReturnPage() {
   function handleSendOTP() {
     setOtpSent(true);
     setOtpTimer(60);
-    // Email: OTP handover
+    // Email + SMS: OTP handover
     sendRentalEmail({
       type: 'otp_handover',
-      ...MOCK_CONTACTS,
+      farmerEmail: MOCK_CONTACTS.farmerEmail,
+      providerEmail: MOCK_CONTACTS.providerEmail,
+      farmerName: MOCK_BOOKING.farmerName,
+      providerName: MOCK_BOOKING.supplierName,
+      bookingId: MOCK_BOOKING.id,
+      equipmentName: MOCK_BOOKING.equipmentName,
+      otp: MOCK_OTP,
+    });
+    sendRentalSms({
+      type: 'otp_handover',
+      farmerPhone: MOCK_CONTACTS.farmerPhone,
+      providerPhone: MOCK_CONTACTS.providerPhone,
       farmerName: MOCK_BOOKING.farmerName,
       providerName: MOCK_BOOKING.supplierName,
       bookingId: MOCK_BOOKING.id,
@@ -127,51 +153,91 @@ export default function RentalReturnPage() {
 
   async function handleReturnRequestApproved() {
     setEmailSending(true);
-    await sendRentalEmail({
-      type: 'return_request_approved',
-      ...MOCK_CONTACTS,
-      farmerName: MOCK_BOOKING.farmerName,
-      providerName: MOCK_BOOKING.supplierName,
-      bookingId: MOCK_BOOKING.id,
-      equipmentName: MOCK_BOOKING.equipmentName,
-    });
+    await Promise.all([
+      sendRentalEmail({
+        type: 'return_request_approved',
+        farmerEmail: MOCK_CONTACTS.farmerEmail,
+        providerEmail: MOCK_CONTACTS.providerEmail,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+      }),
+      sendRentalSms({
+        type: 'return_request_approved',
+        farmerPhone: MOCK_CONTACTS.farmerPhone,
+        providerPhone: MOCK_CONTACTS.providerPhone,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+      }),
+    ]);
     setEmailSending(false);
-    toast.success('Return approved — confirmation email sent');
+    toast.success('Return approved — confirmation sent via email & SMS');
     goNext();
   }
 
   async function handleInspectionComplete() {
     setEmailSending(true);
-    await sendRentalEmail({
-      type: 'inspection_results',
-      ...MOCK_CONTACTS,
-      farmerName: MOCK_BOOKING.farmerName,
-      providerName: MOCK_BOOKING.supplierName,
-      bookingId: MOCK_BOOKING.id,
-      equipmentName: MOCK_BOOKING.equipmentName,
-      conditionRating,
-      inspectionNotes,
-    });
+    await Promise.all([
+      sendRentalEmail({
+        type: 'inspection_results',
+        farmerEmail: MOCK_CONTACTS.farmerEmail,
+        providerEmail: MOCK_CONTACTS.providerEmail,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+        conditionRating,
+        inspectionNotes,
+      }),
+      sendRentalSms({
+        type: 'inspection_results',
+        farmerPhone: MOCK_CONTACTS.farmerPhone,
+        providerPhone: MOCK_CONTACTS.providerPhone,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+        conditionRating,
+        inspectionNotes,
+      }),
+    ]);
     setEmailSending(false);
-    toast.success('Inspection saved — results emailed to farmer');
+    toast.success('Inspection saved — results sent via email & SMS');
     goNext();
   }
 
   async function handleDamageAssessmentComplete() {
     setEmailSending(true);
-    await sendRentalEmail({
-      type: 'damage_assessment',
-      ...MOCK_CONTACTS,
-      farmerName: MOCK_BOOKING.farmerName,
-      providerName: MOCK_BOOKING.supplierName,
-      bookingId: MOCK_BOOKING.id,
-      equipmentName: MOCK_BOOKING.equipmentName,
-      damages: damages.filter(d => d.checked).map(d => ({ label: d.label, cost: d.cost })),
-      totalDamageCost,
-      depositAmount: MOCK_BOOKING.deposit,
-    });
+    await Promise.all([
+      sendRentalEmail({
+        type: 'damage_assessment',
+        farmerEmail: MOCK_CONTACTS.farmerEmail,
+        providerEmail: MOCK_CONTACTS.providerEmail,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+        damages: damages.filter(d => d.checked).map(d => ({ label: d.label, cost: d.cost })),
+        totalDamageCost,
+        depositAmount: MOCK_BOOKING.deposit,
+      }),
+      sendRentalSms({
+        type: 'damage_assessment',
+        farmerPhone: MOCK_CONTACTS.farmerPhone,
+        providerPhone: MOCK_CONTACTS.providerPhone,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+        totalDamageCost,
+        depositAmount: MOCK_BOOKING.deposit,
+      }),
+    ]);
     setEmailSending(false);
-    toast.success('Damage assessment emailed to farmer & provider');
+    toast.success('Damage assessment sent via email & SMS to farmer & provider');
     goNext();
   }
 
@@ -202,19 +268,32 @@ export default function RentalReturnPage() {
       // Non-blocking — continue even if Stripe refund fails
     }
 
-    await sendRentalEmail({
-      type: 'refund_processed',
-      ...MOCK_CONTACTS,
-      farmerName: MOCK_BOOKING.farmerName,
-      providerName: MOCK_BOOKING.supplierName,
-      bookingId: MOCK_BOOKING.id,
-      equipmentName: MOCK_BOOKING.equipmentName,
-      refundAmount,
-      refundMethod: 'Original Payment Method',
-    });
+    await Promise.all([
+      sendRentalEmail({
+        type: 'refund_processed',
+        farmerEmail: MOCK_CONTACTS.farmerEmail,
+        providerEmail: MOCK_CONTACTS.providerEmail,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+        refundAmount,
+        refundMethod: 'Original Payment Method',
+      }),
+      sendRentalSms({
+        type: 'refund_processed',
+        farmerPhone: MOCK_CONTACTS.farmerPhone,
+        providerPhone: MOCK_CONTACTS.providerPhone,
+        farmerName: MOCK_BOOKING.farmerName,
+        providerName: MOCK_BOOKING.supplierName,
+        bookingId: MOCK_BOOKING.id,
+        equipmentName: MOCK_BOOKING.equipmentName,
+        refundAmount,
+      }),
+    ]);
     setEmailSending(false);
     setRefundProcessed(true);
-    toast.success('Refund initiated — confirmation email sent!');
+    toast.success('Refund initiated — confirmation sent via email & SMS!');
   }
 
   function goNext() {
