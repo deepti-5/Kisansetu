@@ -43,6 +43,7 @@ export default function Header() {
     { icon: User, label: t('yourInfo'), href: '/account/profile' },
     { icon: ShoppingBag, label: t('bookings'), href: '/account/bookings' },
     { icon: Tractor, label: 'My Rentals', href: '/farmer/rentals' },
+    { icon: CreditCard, label: 'Pay for Rental', href: '/rental-payment' },
     { icon: MessageCircle, label: 'Messages', href: '/messages' },
     { icon: Inbox, label: 'Notification Inbox', href: '/inbox' },
     { icon: CreditCard, label: t('payments'), href: '/account/payments' },
