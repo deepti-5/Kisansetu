@@ -33,6 +33,7 @@ export default function Header() {
   const NAV_LINKS = [
     { label: t('home'), href: '/' },
     { label: t('equipment'), href: '/equipment-listing-page' },
+    { label: 'Browse Rentals', href: '/browse-equipment' },
     { label: t('labour'), href: '/labour' },
     { label: t('agri'), href: '/agri' },
     { label: 'Discover', href: '/discovery' },
@@ -42,6 +43,7 @@ export default function Header() {
 
   const ACCOUNT_MENU = [
     { icon: User, label: t('yourInfo'), href: '/account/profile' },
+    { icon: Tractor, label: 'Browse Rentals', href: '/browse-equipment' },
     { icon: Inbox, label: 'Unified Inbox', href: '/unified-inbox' },
     { icon: ShoppingBag, label: t('bookings'), href: '/account/bookings' },
     { icon: Tractor, label: 'My Rentals', href: '/farmer/rentals' },
