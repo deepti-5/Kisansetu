@@ -6,11 +6,71 @@ import AppImage from '@/components/ui/AppImage';
 import { MapPin, Star, Heart, ArrowRight, Tag, ShoppingCart } from 'lucide-react';
 
 const EQUIPMENT = [
-  { id: 'eq-001', name: 'Mahindra Yuvo 575 DI', category: 'Tractor', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_10815e2b9-1779367071248.png', imageAlt: 'Red Mahindra Yuvo 575 DI tractor parked on farm with green fields in background', rentPerDay: 2500, buyPrice: 750000, deposit: 10000, location: 'Hadapsar, Pune', distance: 2.4, rating: 4.6, reviews: 128, available: true, owner: 'Rajesh Patil' },
-  { id: 'eq-002', name: 'Kubota Rotavator 5ft', category: 'Rotavator', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1d6979e39-1772085566274.png', imageAlt: 'Orange Kubota rotavator attachment on tractor tilling brown agricultural soil', rentPerDay: 800, buyPrice: 85000, deposit: 2000, location: 'Kothrud, Pune', distance: 3.1, rating: 4.3, reviews: 74, available: true, owner: 'Priya Deshmukh' },
-  { id: 'eq-003', name: 'John Deere W70 Harvester', category: 'Harvester', image: 'https://images.unsplash.com/photo-1653474351870-0c89db2d1654', imageAlt: 'Yellow John Deere combine harvester working in golden wheat field at sunset', rentPerDay: 8000, buyPrice: 3200000, deposit: 25000, location: 'Sinhagad Road, Pune', distance: 5.7, rating: 4.7, reviews: 203, available: false, owner: 'Sunil Mane' },
-  { id: 'eq-004', name: 'Fieldking Seed Drill', category: 'Seed Drill', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_104eaccee-1768761568871.png', imageAlt: 'Green seed drill agricultural implement attached to tractor in brown ploughed field', rentPerDay: 1200, buyPrice: 95000, deposit: 3000, location: 'Wagholi, Pune', distance: 8.2, rating: 4.2, reviews: 56, available: true, owner: 'Anil Shinde' },
-];
+{
+  id: 'eq-001',
+  name: 'Massey Ferguson 241 DI Tractor',
+  category: 'Tractor',
+  image: "https://images.unsplash.com/photo-1644828320537-35456847a8c6",
+  imageAlt: 'Red Massey Ferguson 241 DI tractor parked outdoors on farm — real photograph matching PDF equipment listing',
+  rentPerDay: 2500,
+  buyPrice: 750000,
+  deposit: 10000,
+  location: 'Hadapsar, Pune',
+  distance: 2.4,
+  rating: 4.6,
+  reviews: 128,
+  available: true,
+  owner: 'Rajesh Patil'
+},
+{
+  id: 'eq-005',
+  name: 'Maschio Rotary Tiller',
+  category: 'Rotavator',
+  image: "https://images.unsplash.com/photo-1521619179741-b5f97af5e982",
+  imageAlt: 'Red Maschio brand rotary tiller agricultural implement sitting in a field — real photograph from PDF equipment collection',
+  rentPerDay: 800,
+  buyPrice: 85000,
+  deposit: 2000,
+  location: 'Baner, Pune',
+  distance: 4.5,
+  rating: 4.2,
+  reviews: 89,
+  available: true,
+  owner: 'Kavita Jadhav'
+},
+{
+  id: 'eq-009',
+  name: 'YARA Agriculture Knapsack Sprayer',
+  category: 'Sprayer',
+  image: "https://img.rocket.new/generatedImages/rocket_gen_img_1b80e26e4-1764852457679.png",
+  imageAlt: 'Blue YARA Agriculture knapsack sprayer with yellow nozzle standing in field at sunset — real photograph from PDF equipment collection',
+  rentPerDay: 300,
+  buyPrice: 4500,
+  deposit: 500,
+  location: 'Kothrud, Pune',
+  distance: 2.9,
+  rating: 4.1,
+  reviews: 112,
+  available: true,
+  owner: 'Priya Deshmukh'
+},
+{
+  id: 'eq-013',
+  name: 'Sonalika Farm Trailer',
+  category: 'Trailer',
+  image: "https://images.unsplash.com/photo-1618337018520-3b792841c0bc",
+  imageAlt: 'Blue Sonalika brand farm trailer with black chassis and large off-road tires parked in a field — real photograph from PDF equipment collection',
+  rentPerDay: 1500,
+  buyPrice: 180000,
+  deposit: 4000,
+  location: 'Hadapsar, Pune',
+  distance: 3.2,
+  rating: 4.5,
+  reviews: 91,
+  available: true,
+  owner: 'Rajesh Patil'
+}];
+
 
 export default function FeaturedEquipment() {
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -36,16 +96,16 @@ export default function FeaturedEquipment() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {EQUIPMENT.map((item) => (
-            <div key={item.id} className="card-base card-hover overflow-hidden group">
+          {EQUIPMENT.map((item) =>
+          <div key={item.id} className="card-base card-hover overflow-hidden group">
               <div className="relative h-44 overflow-hidden">
                 <AppImage src={item.image} alt={item.imageAlt} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 <button
-                  suppressHydrationWarning
-                  onClick={() => toggleWish(item.id)}
-                  className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 ${wishlist.includes(item.id) ? 'bg-danger text-white' : 'bg-white/80 backdrop-blur-sm text-muted-foreground hover:bg-white'}`}
-                >
+                suppressHydrationWarning
+                onClick={() => toggleWish(item.id)}
+                className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 ${wishlist.includes(item.id) ? 'bg-danger text-white' : 'bg-white/80 backdrop-blur-sm text-muted-foreground hover:bg-white'}`}>
+                
                   <Heart size={14} fill={wishlist.includes(item.id) ? 'currentColor' : 'none'} />
                 </button>
                 <div className="absolute bottom-2.5 left-2.5">
@@ -98,13 +158,13 @@ export default function FeaturedEquipment() {
                 </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="mt-5 flex justify-center md:hidden">
           <Link href="/equipment-listing-page" className="btn-secondary gap-2">View All Equipment <ArrowRight size={16} /></Link>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 }

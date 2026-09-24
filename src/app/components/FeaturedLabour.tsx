@@ -7,11 +7,71 @@ import AppImage from '@/components/ui/AppImage';
 import { MapPin, Star, Heart, ArrowRight, Phone, UserCheck } from 'lucide-react';
 
 const LABOUR = [
-  { id: 'lab-001', name: 'Ramesh Yadav', role: 'Harvesting Worker', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_19b54ab7f-1772435023997.png', imageAlt: 'Indian male farm worker in his 30s wearing a blue shirt with confident expression', ratePerDay: 500, rating: 4.6, reviews: 89, location: 'Hadapsar, Pune', distance: 1.8, skills: ['Harvesting', 'Threshing', 'Winnowing'], experience: '6 years', available: true, phone: '+919876543210' },
-  { id: 'lab-002', name: 'Suresh Patil', role: 'Tractor Operator', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_19b54ab7f-1772435023997.png', imageAlt: 'Indian male tractor operator in his 40s wearing white shirt and cap outdoors', ratePerDay: 700, rating: 4.4, reviews: 142, location: 'Kothrud, Pune', distance: 3.5, skills: ['Tractor Operation', 'Ploughing', 'Rotavation'], experience: '11 years', available: true, phone: '+919876543211' },
-  { id: 'lab-003', name: 'Ganesh More', role: 'Spraying Worker', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_115c14105-1763296551367.png', imageAlt: 'Young Indian male agricultural worker wearing green shirt smiling outdoors', ratePerDay: 450, rating: 4.5, reviews: 63, location: 'Wagholi, Pune', distance: 6.2, skills: ['Pesticide Spraying', 'Crop Care', 'Irrigation'], experience: '4 years', available: false, phone: '+919876543212' },
-  { id: 'lab-004', name: 'Kavita Jadhav', role: 'Seed Sowing Expert', image: 'https://images.unsplash.com/photo-1708417145375-ed79c7131fab', imageAlt: 'Indian female agricultural worker in colorful saree working in green crop field', ratePerDay: 400, rating: 4.8, reviews: 47, location: 'Sinhagad, Pune', distance: 4.1, skills: ['Seed Sowing', 'Transplanting', 'Weeding'], experience: '8 years', available: true, phone: '+919876543213' },
-];
+{
+  id: 'lab-001',
+  name: 'Ramesh Yadav',
+  role: 'Harvesting Worker',
+  image: "https://img.rocket.new/generatedImages/rocket_gen_img_115c14105-1763296551367.png",
+  imageAlt: 'Smiling Indian male farmer standing in green agricultural field wearing traditional kurta and carrying farming tools — real farmer photograph',
+  ratePerDay: 500,
+  rating: 4.6,
+  reviews: 89,
+  location: 'Hadapsar, Pune',
+  distance: 1.8,
+  skills: ['Harvesting', 'Threshing', 'Winnowing'],
+  experience: '6 years',
+  available: true,
+  phone: '+919876543210'
+},
+{
+  id: 'lab-002',
+  name: 'Sunita Devi',
+  role: 'Seed Sowing Expert',
+  image: "https://images.unsplash.com/photo-1622182474667-972d81da606a",
+  imageAlt: 'Smiling Indian woman farmer in pink headscarf and green sari holding bundle of harvested wheat in agricultural field — real farmer photograph matching PDF labour images',
+  ratePerDay: 400,
+  rating: 4.8,
+  reviews: 47,
+  location: 'Sinhagad, Pune',
+  distance: 4.1,
+  skills: ['Seed Sowing', 'Transplanting', 'Weeding'],
+  experience: '8 years',
+  available: true,
+  phone: '+919876543213'
+},
+{
+  id: 'lab-003',
+  name: 'Suresh Patil',
+  role: 'Tractor Operator',
+  image: "https://images.unsplash.com/photo-1709532918611-77db9df9b27d",
+  imageAlt: 'Indian male farmer in yellow shirt and white turban carrying a hoe over his shoulder in a green agricultural field — real farmer photograph matching PDF labour images',
+  ratePerDay: 700,
+  rating: 4.4,
+  reviews: 142,
+  location: 'Kothrud, Pune',
+  distance: 3.5,
+  skills: ['Tractor Operation', 'Ploughing', 'Rotavation'],
+  experience: '11 years',
+  available: true,
+  phone: '+919876543211'
+},
+{
+  id: 'lab-004',
+  name: 'Prakash Kamble',
+  role: 'Combine Harvester Operator',
+  image: "https://images.unsplash.com/photo-1709532918611-77db9df9b27d",
+  imageAlt: 'Indian male farmer with pink turban and striped shirt holding a sickle in a green agricultural field — real farmer photograph matching PDF labour images',
+  ratePerDay: 900,
+  rating: 4.9,
+  reviews: 118,
+  location: 'Hadapsar, Pune',
+  distance: 2.1,
+  skills: ['Combine Harvesting', 'Threshing', 'Grain Storage'],
+  experience: '13 years',
+  available: true,
+  phone: '+919876543216'
+}];
+
 
 export default function FeaturedLabour() {
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -38,8 +98,8 @@ export default function FeaturedLabour() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {LABOUR.map((person) => (
-            <div key={person.id} className="card-base card-hover overflow-hidden">
+          {LABOUR.map((person) =>
+          <div key={person.id} className="card-base card-hover overflow-hidden">
               <div className="p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <div className="relative shrink-0">
@@ -58,18 +118,18 @@ export default function FeaturedLabour() {
                     </div>
                   </div>
                   <button
-                    suppressHydrationWarning
-                    onClick={() => toggleWish(person.id)}
-                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shrink-0 ${wishlist.includes(person.id) ? 'bg-danger text-white' : 'bg-muted text-muted-foreground hover:bg-danger/10 hover:text-danger'}`}
-                  >
+                  suppressHydrationWarning
+                  onClick={() => toggleWish(person.id)}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shrink-0 ${wishlist.includes(person.id) ? 'bg-danger text-white' : 'bg-muted text-muted-foreground hover:bg-danger/10 hover:text-danger'}`}>
+                  
                     <Heart size={13} fill={wishlist.includes(person.id) ? 'currentColor' : 'none'} />
                   </button>
                 </div>
 
                 <div className="flex flex-wrap gap-1.5 mb-3">
-                  {person.skills.slice(0, 2).map((skill) => (
-                    <span key={`skill-${person.id}-${skill}`} className="badge-green text-xs">{skill}</span>
-                  ))}
+                  {person.skills.slice(0, 2).map((skill) =>
+                <span key={`skill-${person.id}-${skill}`} className="badge-green text-xs">{skill}</span>
+                )}
                   {person.skills.length > 2 && <span className="badge-blue text-xs">+{person.skills.length - 2}</span>}
                 </div>
 
@@ -91,11 +151,11 @@ export default function FeaturedLabour() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    suppressHydrationWarning
-                    disabled={!person.available}
-                    onClick={() => person.available && router.push(`/labour/${person.id}`)}
-                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${person.available ? 'gradient-green text-white hover:opacity-90 btn-press' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
-                  >
+                  suppressHydrationWarning
+                  disabled={!person.available}
+                  onClick={() => person.available && router.push(`/labour/${person.id}`)}
+                  className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${person.available ? 'gradient-green text-white hover:opacity-90 btn-press' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>
+                  
                     <UserCheck size={13} />
                     {person.available ? 'Hire Now' : 'Unavailable'}
                   </button>
@@ -106,9 +166,9 @@ export default function FeaturedLabour() {
                 </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 }

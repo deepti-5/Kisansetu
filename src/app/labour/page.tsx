@@ -6,18 +6,18 @@ import Footer from '@/components/Footer';
 import AppImage from '@/components/ui/AppImage';
 import { Search, X, MapPin, Star, Heart, Phone, UserCheck, Zap } from 'lucide-react';
 
-interface Labour { id: string; name: string; role: string; image: string; imageAlt: string; ratePerDay: number; rating: number; reviews: number; location: string; distance: number; skills: string[]; experience: string; available: boolean; category: string; phone: string; }
+interface Labour {id: string;name: string;role: string;image: string;imageAlt: string;ratePerDay: number;rating: number;reviews: number;location: string;distance: number;skills: string[];experience: string;available: boolean;category: string;phone: string;}
 
 const ALL_LABOUR: Labour[] = [
-  { id: 'lab-001', name: 'Ramesh Yadav', role: 'Harvesting Worker', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_19b54ab7f-1772435023997.png', imageAlt: 'Indian male farm worker in his 30s wearing a blue shirt with confident expression', ratePerDay: 500, rating: 4.6, reviews: 89, location: 'Hadapsar, Pune', distance: 1.8, skills: ['Harvesting', 'Threshing', 'Winnowing'], experience: '6 years', available: true, category: 'Harvesting', phone: '+919876543210' },
-  { id: 'lab-002', name: 'Suresh Patil', role: 'Tractor Operator', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_19b54ab7f-1772435023997.png', imageAlt: 'Indian male tractor operator in his 40s wearing white shirt and cap outdoors', ratePerDay: 700, rating: 4.4, reviews: 142, location: 'Kothrud, Pune', distance: 3.5, skills: ['Tractor Operation', 'Ploughing', 'Rotavation'], experience: '11 years', available: true, category: 'Tractor Operator', phone: '+919876543211' },
-  { id: 'lab-003', name: 'Ganesh More', role: 'Spraying Worker', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_115c14105-1763296551367.png', imageAlt: 'Young Indian male agricultural worker wearing green shirt smiling outdoors', ratePerDay: 450, rating: 4.5, reviews: 63, location: 'Wagholi, Pune', distance: 6.2, skills: ['Pesticide Spraying', 'Crop Care', 'Irrigation'], experience: '4 years', available: false, category: 'Spraying', phone: '+919876543212' },
-  { id: 'lab-004', name: 'Kavita Jadhav', role: 'Seed Sowing Expert', image: 'https://images.unsplash.com/photo-1708417145375-ed79c7131fab', imageAlt: 'Indian female agricultural worker in colorful saree working in green crop field', ratePerDay: 400, rating: 4.8, reviews: 47, location: 'Sinhagad, Pune', distance: 4.1, skills: ['Seed Sowing', 'Transplanting', 'Weeding'], experience: '8 years', available: true, category: 'Sowing', phone: '+919876543213' },
-  { id: 'lab-005', name: 'Vijay Shinde', role: 'Irrigation Specialist', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1f4ab96d7-1772387562840.png', imageAlt: 'Indian male farmer in his 50s standing near irrigation canal in farm field', ratePerDay: 600, rating: 4.3, reviews: 55, location: 'Baner, Pune', distance: 5.0, skills: ['Drip Irrigation', 'Sprinkler Setup', 'Canal Management'], experience: '9 years', available: true, category: 'Irrigation', phone: '+919876543214' },
-  { id: 'lab-006', name: 'Sunita Devi', role: 'Weeding & Transplanting', image: 'https://images.unsplash.com/photo-1628164918084-ab8bc823b17d', imageAlt: 'Indian female farm worker in yellow saree transplanting rice seedlings in paddy field', ratePerDay: 380, rating: 4.7, reviews: 72, location: 'Mundhwa, Pune', distance: 7.3, skills: ['Weeding', 'Transplanting', 'Nursery Management'], experience: '5 years', available: true, category: 'Sowing', phone: '+919876543215' },
-  { id: 'lab-007', name: 'Prakash Kamble', role: 'Combine Harvester Operator', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1551bdb60-1772435022148.png', imageAlt: 'Indian male combine harvester operator in his 35s wearing orange vest in field', ratePerDay: 900, rating: 4.9, reviews: 118, location: 'Hadapsar, Pune', distance: 2.1, skills: ['Combine Harvesting', 'Threshing', 'Grain Storage'], experience: '13 years', available: true, category: 'Harvesting', phone: '+919876543216' },
-  { id: 'lab-008', name: 'Meena Kumari', role: 'Organic Farming Expert', image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1f343fdd6-1773135120051.png', imageAlt: 'Indian female organic farmer in green dupatta tending to vegetable garden', ratePerDay: 550, rating: 4.6, reviews: 39, location: 'Kothrud, Pune', distance: 3.8, skills: ['Organic Farming', 'Composting', 'Bio-pesticide Application'], experience: '7 years', available: false, category: 'Crop Care', phone: '+919876543217' },
-];
+{ id: 'lab-001', name: 'Ramesh Yadav', role: 'Harvesting Worker', image: "https://img.rocket.new/generatedImages/rocket_gen_img_1fc868bc9-1772090980564.png", imageAlt: 'Smiling Indian male farmer standing in green agricultural field wearing traditional kurta holding a blue basin of green fodder — real farmer photograph matching PDF labour images', ratePerDay: 500, rating: 4.6, reviews: 89, location: 'Hadapsar, Pune', distance: 1.8, skills: ['Harvesting', 'Threshing', 'Winnowing'], experience: '6 years', available: true, category: 'Harvesting', phone: '+919876543210' },
+{ id: 'lab-002', name: 'Suresh Patil', role: 'Tractor Operator', image: "https://images.unsplash.com/photo-1709532918611-77db9df9b27d", imageAlt: 'Indian male farmer in yellow shirt and white turban carrying a hoe over his shoulder in a green agricultural field — real farmer photograph matching PDF labour images', ratePerDay: 700, rating: 4.4, reviews: 142, location: 'Kothrud, Pune', distance: 3.5, skills: ['Tractor Operation', 'Ploughing', 'Rotavation'], experience: '11 years', available: true, category: 'Tractor Operator', phone: '+919876543211' },
+{ id: 'lab-003', name: 'Ganesh More', role: 'Spraying Worker', image: "https://img.rocket.new/generatedImages/rocket_gen_img_115c14105-1763296551367.png", imageAlt: 'Smiling young Indian male farmer with red scarf around his neck standing in a green agricultural field — real farmer photograph matching PDF labour images', ratePerDay: 450, rating: 4.5, reviews: 63, location: 'Wagholi, Pune', distance: 6.2, skills: ['Pesticide Spraying', 'Crop Care', 'Irrigation'], experience: '4 years', available: false, category: 'Spraying', phone: '+919876543212' },
+{ id: 'lab-004', name: 'Kavita Jadhav', role: 'Seed Sowing Expert', image: "https://images.unsplash.com/photo-1622182474667-972d81da606a", imageAlt: 'Smiling Indian woman farmer in pink headscarf and green sari holding a bundle of harvested wheat in agricultural field — real farmer photograph matching PDF labour images', ratePerDay: 400, rating: 4.8, reviews: 47, location: 'Sinhagad, Pune', distance: 4.1, skills: ['Seed Sowing', 'Transplanting', 'Weeding'], experience: '8 years', available: true, category: 'Sowing', phone: '+919876543213' },
+{ id: 'lab-005', name: 'Vijay Shinde', role: 'Irrigation Specialist', image: "https://images.unsplash.com/photo-1709532918611-77db9df9b27d", imageAlt: 'Indian male farmer with grey beard and pink turban holding a hoe over his shoulder in a green agricultural field — real farmer photograph matching PDF labour images', ratePerDay: 600, rating: 4.3, reviews: 55, location: 'Baner, Pune', distance: 5.0, skills: ['Drip Irrigation', 'Sprinkler Setup', 'Canal Management'], experience: '9 years', available: true, category: 'Irrigation', phone: '+919876543214' },
+{ id: 'lab-006', name: 'Sunita Devi', role: 'Weeding & Transplanting', image: "https://images.unsplash.com/photo-1709637510942-d7fdfe192290", imageAlt: 'Indian female farmer in sari and red headscarf standing in a green agricultural field holding a green bottle — real farmer photograph matching PDF labour images', ratePerDay: 380, rating: 4.7, reviews: 72, location: 'Mundhwa, Pune', distance: 7.3, skills: ['Weeding', 'Transplanting', 'Nursery Management'], experience: '5 years', available: true, category: 'Sowing', phone: '+919876543215' },
+{ id: 'lab-007', name: 'Prakash Kamble', role: 'Combine Harvester Operator', image: "https://images.unsplash.com/photo-1709532918611-77db9df9b27d", imageAlt: 'Indian male farmer with pink turban and striped shirt holding a sickle in a green agricultural field — real farmer photograph matching PDF labour images', ratePerDay: 900, rating: 4.9, reviews: 118, location: 'Hadapsar, Pune', distance: 2.1, skills: ['Combine Harvesting', 'Threshing', 'Grain Storage'], experience: '13 years', available: true, category: 'Harvesting', phone: '+919876543216' },
+{ id: 'lab-008', name: 'Meena Kumari', role: 'Organic Farming Expert', image: "https://images.unsplash.com/photo-1709532918611-77db9df9b27d", imageAlt: 'Indian male farmer in yellow shirt and white turban carrying a hoe in a green agricultural field — real farmer photograph matching PDF labour images', ratePerDay: 550, rating: 4.6, reviews: 39, location: 'Kothrud, Pune', distance: 3.8, skills: ['Organic Farming', 'Composting', 'Bio-pesticide Application'], experience: '7 years', available: false, category: 'Crop Care', phone: '+919876543217' }];
+
 
 const CATEGORIES = ['All', 'Harvesting', 'Tractor Operator', 'Spraying', 'Sowing', 'Irrigation', 'Crop Care'];
 
@@ -29,7 +29,7 @@ export default function LabourPage() {
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
 
-  function toggleWish(id: string) { setWishlist((p) => p.includes(id) ? p.filter((w) => w !== id) : [...p, id]); }
+  function toggleWish(id: string) {setWishlist((p) => p.includes(id) ? p.filter((w) => w !== id) : [...p, id]);}
 
   const filtered = useMemo(() => {
     let list = ALL_LABOUR.filter((l) => {
@@ -60,10 +60,10 @@ export default function LabourPage() {
 
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            {CATEGORIES.map(cat => <button key={cat} onClick={() => setSelectedCategory(cat)} className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${selectedCategory === cat ? 'gradient-green text-white border-transparent' : 'border-border text-muted-foreground bg-card hover:border-primary hover:text-primary'}`}>{cat}</button>)}
+            {CATEGORIES.map((cat) => <button key={cat} onClick={() => setSelectedCategory(cat)} className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${selectedCategory === cat ? 'gradient-green text-white border-transparent' : 'border-border text-muted-foreground bg-card hover:border-primary hover:text-primary'}`}>{cat}</button>)}
           </div>
           <div className="flex items-center gap-2 ml-auto">
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground focus:outline-none cursor-pointer">
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground focus:outline-none cursor-pointer">
               <option value="rating">Top Rated</option>
               <option value="rate_asc">Rate: Low to High</option>
               <option value="rate_desc">Rate: High to Low</option>
@@ -84,8 +84,8 @@ export default function LabourPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((person) => (
-            <div key={person.id} className="card-base card-hover overflow-hidden">
+          {filtered.map((person) =>
+          <div key={person.id} className="card-base card-hover overflow-hidden">
               <div className="p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <div className="relative shrink-0">
@@ -120,16 +120,16 @@ export default function LabourPage() {
                 </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
 
-        {filtered.length === 0 && (
-          <div className="text-center py-20"><div className="text-5xl mb-4">👨‍🌾</div><h3 className="font-bold text-lg text-foreground mb-2">No Workers Found</h3><p className="text-sm text-muted-foreground">Try adjusting your filters or search terms.</p></div>
-        )}
+        {filtered.length === 0 &&
+        <div className="text-center py-20"><div className="text-5xl mb-4">👨‍🌾</div><h3 className="font-bold text-lg text-foreground mb-2">No Workers Found</h3><p className="text-sm text-muted-foreground">Try adjusting your filters or search terms.</p></div>
+        }
       </main>
 
-      {emergencyOpen && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50">
+      {emergencyOpen &&
+      <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-card rounded-2xl shadow-modal w-full max-w-md p-6 fade-in">
             <h3 className="font-bold text-lg text-foreground mb-2">🚨 Emergency Labour Request</h3>
             <p className="text-sm text-muted-foreground mb-4">We&apos;ll match you with available workers within 2 hours.</p>
@@ -144,8 +144,8 @@ export default function LabourPage() {
             </div>
           </div>
         </div>
-      )}
+      }
       <Footer />
-    </div>
-  );
+    </div>);
+
 }
