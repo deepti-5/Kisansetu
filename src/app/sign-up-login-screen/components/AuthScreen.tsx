@@ -224,6 +224,7 @@ export default function AuthScreen() {
     setLoadingSubmit(true);
     setTimeout(() => {
       setLoadingSubmit(false);
+      let userRole = 'farmer';
       if (loginMethod === 'email') {
         const demoMatch = DEMO_ACCOUNTS.find((acc) => acc.email === data.email && acc.password === data.password);
         const stored = localStorage.getItem('kisansetu_users');
@@ -232,11 +233,21 @@ export default function AuthScreen() {
         if (!demoMatch && !localMatch) { toast.error('Invalid email or password.'); setLoadingSubmit(false); return; }
         const user = localMatch || { fullName: demoMatch!.role, email: demoMatch!.email, role: demoMatch!.role.toLowerCase(), phone: '', state: '' };
         localStorage.setItem('kisansetu_current_user', JSON.stringify(user));
+        userRole = user.role?.toLowerCase() || 'farmer';
       } else {
         localStorage.setItem('kisansetu_current_user', JSON.stringify({ phone: data.phone, role: 'farmer' }));
+        userRole = 'farmer';
       }
       toast.success('Login successful! Redirecting...');
-      setTimeout(() => { window.location.href = '/'; }, 1000);
+      setTimeout(() => {
+        if (userRole === 'supplier' || userRole === 'equipment owner') {
+          window.location.href = '/supplier/hub';
+        } else if (userRole === 'labour' || userRole === 'labour provider') {
+          window.location.href = '/labour/services-profile';
+        } else {
+          window.location.href = '/buyer/workspace';
+        }
+      }, 1000);
     }, 800);
   }
 
@@ -255,7 +266,15 @@ export default function AuthScreen() {
       localStorage.setItem('kisansetu_users', JSON.stringify(users));
       localStorage.setItem('kisansetu_current_user', JSON.stringify(newUser));
       toast.success('Account created! Welcome to KisanSetu 🌾');
-      setTimeout(() => { window.location.href = '/'; }, 1200);
+      setTimeout(() => {
+        if (selectedRole === 'supplier') {
+          window.location.href = '/supplier/hub';
+        } else if (selectedRole === 'labour') {
+          window.location.href = '/labour/services-profile';
+        } else {
+          window.location.href = '/buyer/workspace';
+        }
+      }, 1200);
     }, 1200);
   }
 
