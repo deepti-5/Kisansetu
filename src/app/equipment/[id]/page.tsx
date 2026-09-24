@@ -8,6 +8,8 @@ import { Star, MapPin, Shield, ChevronLeft, ChevronRight, Heart, Share2, Phone, 
 import { ALL_EQUIPMENT } from '@/app/equipment-listing-page/components/EquipmentListingContent';
 import RazorpayCheckout, { PaymentResult } from '@/components/RazorpayCheckout';
 import { toast } from 'sonner';
+import AvailabilityCalendar from './components/AvailabilityCalendar';
+import { createClient } from '@/lib/supabase/client';
 
 const EXTRA_IMAGES = [
   'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800',
@@ -31,6 +33,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
   const [endDate, setEndDate] = useState('');
   const [bookingId, setBookingId] = useState('');
   const [paidId, setPaidId] = useState('');
+  const [bookingError, setBookingError] = useState('');
 
   const days = startDate && endDate ? Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000) + 1) : 1;
   const rentalAmt = days * equipment.rentPerDay;
@@ -39,10 +42,49 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
   const buyFee = Math.round(equipment.buyPrice * 0.01);
   const totalBuy = equipment.buyPrice + buyFee;
 
-  function handleRentSuccess(result: PaymentResult) {
+  async function handleRentSuccess(result: PaymentResult) {
     const id = 'BKG' + Math.floor(Math.random() * 90000 + 10000);
-    setBookingId(id); setPaidId(result.paymentId); setRentStep('done');
+    setBookingId(id);
+    setPaidId(result.paymentId);
+
+    // Block the dates in equipment_availability table
+    try {
+      const supabase = createClient();
+      // Try to find the equipment UUID from the DB
+      const { data: equip } = await supabase
+        .from('equipment')
+        .select('id')
+        .eq('name', equipment.name)
+        .limit(1)
+        .maybeSingle();
+
+      if (equip?.id) {
+        await supabase.from('equipment_availability').insert({
+          equipment_id: equip.id,
+          start_date: startDate,
+          end_date: endDate,
+          status: 'booked',
+          notes: `Booking ${id}`,
+        });
+      }
+    } catch {
+      // Non-blocking — booking still confirmed
+    }
+
+    setRentStep('done');
     toast.success('Booking confirmed! ✅');
+  }
+
+  function handleCalendarSelect(start: string, end: string) {
+    setStartDate(start);
+    setEndDate(end);
+    setBookingError('');
+  }
+
+  function handleOpenRentModal() {
+    setModal('rent');
+    setRentStep('dates');
+    setBookingError('');
   }
 
   return (
@@ -59,6 +101,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-3 space-y-6">
+            {/* Image Gallery */}
             <div className="space-y-3">
               <div className="relative rounded-2xl overflow-hidden bg-muted aspect-[16/10]">
                 <img src={images[activeImg]} alt={equipment.imageAlt} className="w-full h-full object-cover" />
@@ -71,6 +114,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
+            {/* Title & Rating */}
             <div className="flex items-start justify-between gap-4">
               <div>
                 <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">{equipment.category}</span>
@@ -86,6 +130,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
+            {/* Specifications */}
             <div className="bg-card rounded-2xl border border-border p-5">
               <h2 className="font-bold text-base text-foreground mb-4 flex items-center gap-2"><Wrench size={16} className="text-primary" /> Specifications</h2>
               <div className="grid grid-cols-2 gap-3">
@@ -94,8 +139,17 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                 ))}
               </div>
             </div>
+
+            {/* Availability Calendar */}
+            <AvailabilityCalendar
+              equipmentId={resolvedParams.id}
+              onDateRangeSelect={handleCalendarSelect}
+              selectedStart={startDate}
+              selectedEnd={endDate}
+            />
           </div>
 
+          {/* Booking Sidebar */}
           <div className="lg:col-span-2 space-y-4">
             <div className="bg-card rounded-2xl border border-border p-5 sticky top-20">
               <div className="space-y-3 mb-5">
@@ -103,8 +157,18 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                 <div className="flex items-center justify-between"><div className="flex items-center gap-1.5 text-sm text-muted-foreground"><ShoppingCart size={14} />Buy price</div><span className="text-lg font-bold text-foreground font-tabular">₹{(equipment.buyPrice / 100000).toFixed(1)}L</span></div>
                 <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Security deposit</span><span className="text-sm font-bold text-warning font-tabular">₹{equipment.deposit.toLocaleString('en-IN')} (refundable)</span></div>
               </div>
+
+              {/* Selected dates preview */}
+              {startDate && endDate && (
+                <div className="mb-4 bg-primary/5 border border-primary/20 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-primary mb-1">Selected Dates</p>
+                  <p className="text-sm text-foreground font-medium">{startDate} → {endDate}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{days} day{days > 1 ? 's' : ''} · ₹{rentalAmt.toLocaleString('en-IN')} rental</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <button disabled={!equipment.available} onClick={() => { setModal('rent'); setRentStep('dates'); }} className={`py-3 rounded-xl font-bold text-sm transition-all ${equipment.available ? 'btn-primary' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>Rent Now</button>
+                <button disabled={!equipment.available} onClick={handleOpenRentModal} className={`py-3 rounded-xl font-bold text-sm transition-all ${equipment.available ? 'btn-primary' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>Rent Now</button>
                 <button disabled={!equipment.available} onClick={() => setModal('buy')} className={`py-3 rounded-xl font-bold text-sm transition-all ${equipment.available ? 'btn-accent' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>Buy Now</button>
               </div>
               <a href={`tel:${equipment.ownerPhone}`} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-border text-sm font-semibold hover:bg-muted transition-colors"><Phone size={16} />Call {equipment.owner}</a>
@@ -118,6 +182,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
         </div>
       </main>
 
+      {/* Rent Modal */}
       {modal === 'rent' && (
         <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
           <div className="bg-card w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-modal max-h-[95vh] overflow-y-auto fade-in">
@@ -128,12 +193,29 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
             <div className="p-5">
               {rentStep === 'dates' && (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div><label className="block text-sm font-semibold text-foreground mb-1.5">Start Date</label><input type="date" value={startDate} min={new Date().toISOString().split('T')[0]} onChange={(e) => setStartDate(e.target.value)} className="input-field text-sm" /></div>
-                    <div><label className="block text-sm font-semibold text-foreground mb-1.5">End Date</label><input type="date" value={endDate} min={startDate || new Date().toISOString().split('T')[0]} onChange={(e) => setEndDate(e.target.value)} className="input-field text-sm" /></div>
-                  </div>
-                  {startDate && endDate && <div className="bg-secondary/60 rounded-xl p-3 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="font-bold text-primary">{days} day{days > 1 ? 's' : ''}</span></div><div className="flex justify-between mt-1"><span className="text-muted-foreground">Estimated rental</span><span className="font-bold font-tabular">₹{rentalAmt.toLocaleString('en-IN')}</span></div></div>}
-                  <button onClick={() => startDate && endDate && setRentStep('summary')} disabled={!startDate || !endDate} className="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed">Continue →</button>
+                  {/* Inline calendar in modal */}
+                  <AvailabilityCalendar
+                    equipmentId={resolvedParams.id}
+                    onDateRangeSelect={(s, e) => { setStartDate(s); setEndDate(e); setBookingError(''); }}
+                    selectedStart={startDate}
+                    selectedEnd={endDate}
+                  />
+                  {bookingError && (
+                    <div className="bg-danger/10 border border-danger/30 rounded-xl p-3 text-sm text-danger">{bookingError}</div>
+                  )}
+                  {startDate && endDate && (
+                    <div className="bg-secondary/60 rounded-xl p-3 text-sm">
+                      <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="font-bold text-primary">{days} day{days > 1 ? 's' : ''}</span></div>
+                      <div className="flex justify-between mt-1"><span className="text-muted-foreground">Estimated rental</span><span className="font-bold font-tabular">₹{rentalAmt.toLocaleString('en-IN')}</span></div>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => startDate && endDate && setRentStep('summary')}
+                    disabled={!startDate || !endDate}
+                    className="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Continue →
+                  </button>
                 </div>
               )}
               {rentStep === 'summary' && (
@@ -162,7 +244,8 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                 <div className="text-center py-4">
                   <div className="w-16 h-16 rounded-full bg-success-bg flex items-center justify-center mx-auto mb-4"><CheckCircle size={32} className="text-success" /></div>
                   <h3 className="font-bold text-xl text-foreground mb-2">Booking Confirmed!</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Booking ID: <span className="font-bold text-primary">{bookingId}</span></p>
+                  <p className="text-sm text-muted-foreground mb-1">Booking ID: <span className="font-bold text-primary">{bookingId}</span></p>
+                  <p className="text-xs text-muted-foreground mb-4">{startDate} → {endDate} · {days} day{days > 1 ? 's' : ''}</p>
                   <button onClick={() => setModal(null)} className="w-full btn-primary py-3">View My Bookings</button>
                 </div>
               )}
@@ -171,6 +254,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
         </div>
       )}
 
+      {/* Buy Modal */}
       {modal === 'buy' && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-card rounded-2xl shadow-modal w-full max-w-md p-6 fade-in">
