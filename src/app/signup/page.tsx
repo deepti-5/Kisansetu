@@ -8,7 +8,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2, Tractor, Wrench, User } from 'lucide-
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-type Role = 'farmer' | 'provider';
+type Role = 'farmer' | 'supplier';
 
 export default function SignupPage() {
   const { signUp } = useAuth();
@@ -50,7 +50,9 @@ export default function SignupPage() {
         role,
       });
       toast.success(`Account created! Welcome to KisanSetu 🌾`);
-      setTimeout(() => router.push('/inbox'), 600);
+      // Role-based redirect
+      const destination = role === 'supplier' ? '/supplier/hub' : '/unified-inbox';
+      setTimeout(() => router.push(destination), 600);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to create account. Please try again.';
       toast.error(msg);
@@ -72,7 +74,7 @@ export default function SignupPage() {
             Create your KisanSetu account
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5">
-            Join thousands of farmers and equipment providers
+            Join thousands of farmers and equipment suppliers
           </p>
         </div>
 
@@ -88,7 +90,7 @@ export default function SignupPage() {
                 type="button"
                 onClick={() => setRole('farmer')}
                 className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${
-                  role === 'farmer' ?'border-primary bg-primary/5 text-primary' :'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+                  role === 'farmer' ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
                 }`}
               >
                 <Tractor size={22} />
@@ -97,13 +99,13 @@ export default function SignupPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setRole('provider')}
+                onClick={() => setRole('supplier')}
                 className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${
-                  role === 'provider' ?'border-primary bg-primary/5 text-primary' :'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+                  role === 'supplier' ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
                 }`}
               >
                 <Wrench size={22} />
-                <span className="text-sm font-semibold">Provider</span>
+                <span className="text-sm font-semibold">Supplier</span>
                 <span className="text-[11px] text-center leading-tight opacity-70">List &amp; manage your equipment</span>
               </button>
             </div>
@@ -216,7 +218,7 @@ export default function SignupPage() {
               {loading ? (
                 <><Loader2 size={16} className="animate-spin" /> Creating account...</>
               ) : (
-                `Create ${role === 'farmer' ? 'Farmer' : 'Provider'} Account`
+                `Create ${role === 'farmer' ? 'Farmer' : 'Supplier'} Account`
               )}
             </button>
           </form>

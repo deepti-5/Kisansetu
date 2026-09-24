@@ -8,6 +8,8 @@ import { LayoutDashboard, Package, Calendar, IndianRupee, User, Settings, Plus, 
 import { toast } from 'sonner';
 import ReviewsList, { SAMPLE_REVIEWS } from '@/app/components/ReviewsList';
 import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface Listing {
   id: string; name: string; category: string; type: 'tractor' | 'equipment';
@@ -62,6 +64,19 @@ export default function SupplierHub() {
   });
   const [draft, setDraft] = useState<ProfileData>(profile);
   const supabase = createClient();
+  const { user, loading: authLoading, isSupplier } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?next=/supplier/hub');
+      return;
+    }
+    if (!authLoading && user && !isSupplier()) {
+      router.replace('/unified-inbox?error=supplier_only');
+      return;
+    }
+  }, [authLoading, user]);
 
   // Load provider profile
   const loadProfile = useCallback(async () => {

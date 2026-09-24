@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import Icon from '../../../../kisansetu-main/src/components/ui/AppIcon';
+import { useRouter } from 'next/navigation';
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -330,8 +331,9 @@ function ReviewModal({ rental, onClose, onSubmit }: {rental: Rental;onClose: () 
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function FarmerRentalsPage() {
-  const { user } = useAuth();
+export default function FarmerRentals() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [rentals, setRentals] = useState<Rental[]>(MOCK_RENTALS);
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
@@ -392,6 +394,12 @@ export default function FarmerRentalsPage() {
   }, [user]);
 
   useEffect(() => {fetchRentals();}, [fetchRentals]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?next=/farmer/rentals');
+    }
+  }, [authLoading, user]);
 
   function handleCancel(id: string) {
     setRentals((prev) => prev.map((r) => r.id === id ? { ...r, status: 'cancelled' } : r));
