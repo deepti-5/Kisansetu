@@ -11,6 +11,8 @@ import HowItWorksSection from '@/app/components/HowItWorksSection';
 import KeyFeaturesSection from '@/app/components/KeyFeaturesSection';
 import TestimonialsSection from '@/app/components/TestimonialsSection';
 
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
