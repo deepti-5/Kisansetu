@@ -8,6 +8,8 @@ import { ShoppingBag, Heart, Package, User, Truck, Star, Search, Bell, Calendar,
 import { toast } from 'sonner';
 import ReviewModal from '@/app/components/ReviewModal';
 import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 type BookingStatus = 'confirmed' | 'preparing' | 'rental_active' | 'returned' | 'cancelled' | 'pending';
 type Tab = 'overview' | 'rentals' | 'purchases' | 'bookings' | 'saved' | 'account';
@@ -62,6 +64,8 @@ export default function BuyerWorkspace() {
   });
   const [draft, setDraft] = useState<ProfileData>(profile);
   const supabase = createClient();
+  const { signOut } = useAuth();
+  const router = useRouter();
 
   // Load user profile
   const loadProfile = useCallback(async () => {
@@ -219,6 +223,16 @@ export default function BuyerWorkspace() {
     } catch {
       setSavedItems((prev) => prev.filter((s) => s.id !== id));
       toast.success('Removed from saved items');
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+      toast.success('Logged out successfully');
+      router.push('/sign-up-login-screen');
+    } catch {
+      toast.error('Failed to log out');
     }
   }
 
@@ -502,7 +516,7 @@ export default function BuyerWorkspace() {
               <Link href="/supplier/hub" className="flex items-center gap-3 p-3 rounded-xl border border-primary/20 bg-primary/5 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors mb-3">
                 <Tractor size={16} /> Switch to Supplier Mode
               </Link>
-              <button className="flex items-center gap-3 w-full p-3 rounded-xl border border-danger/20 bg-danger/5 text-danger font-semibold text-sm hover:bg-danger/10 transition-colors">
+              <button onClick={handleSignOut} className="flex items-center gap-3 w-full p-3 rounded-xl border border-danger/20 bg-danger/5 text-danger font-semibold text-sm hover:bg-danger/10 transition-colors">
                 <LogOut size={16} /> Sign Out
               </button>
             </div>
@@ -517,6 +531,7 @@ export default function BuyerWorkspace() {
           onClose={() => setReviewTarget(null)}
           onSubmit={handleReviewSubmit}
           equipmentName={reviewTarget.equipment}
+          bookingId={reviewTarget.id}
           supplierName={reviewTarget.supplier}
         />
       )}

@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Package, Truck, RotateCcw, Search } from 'lucide-react';
+import { Package, Truck, RotateCcw, Search, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ReviewModal from '@/app/components/ReviewModal';
 
 type BookingStatus = 'confirmed' | 'preparing' | 'received' | 'rental_active' | 'returned' | 'cancelled';
 type BookingType = 'rental' | 'purchase';
@@ -31,6 +32,8 @@ export default function BookingsPage() {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
+  const [reviewTarget, setReviewTarget] = useState<Booking | null>(null);
+  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
 
   const STATUS_LABELS: Record<BookingStatus, string> = {
     confirmed: t('statusConfirmed'),
@@ -46,6 +49,12 @@ export default function BookingsPage() {
     const matchSearch = !search || b.equipmentName.toLowerCase().includes(search.toLowerCase()) || b.id.toLowerCase().includes(search.toLowerCase());
     return matchTab && matchSearch;
   });
+
+  function handleReviewSubmit(review: { rating: number; comment: string }) {
+    if (reviewTarget) {
+      setSubmittedReviews(prev => new Set(prev).add(reviewTarget.id));
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,12 +100,17 @@ export default function BookingsPage() {
                       <span className="font-bold text-primary">₹{booking.amountPaid.toLocaleString('en-IN')}</span>
                       {booking.deposit && <span className="text-warning">Deposit: ₹{booking.deposit.toLocaleString('en-IN')}</span>}
                     </div>
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex gap-2 mt-3 flex-wrap">
                       {['confirmed', 'preparing', 'received', 'rental_active'].includes(booking.status) && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"><Truck size={13} /> {t('track')}</button>}
                       {booking.status === 'rental_active' && (
                         <Link href="/rental-return" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-semibold hover:bg-warning/20 transition-colors"><RotateCcw size={13} /> {t('return')}</Link>
                       )}
-                      {booking.status === 'returned' && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors">{t('writeReview')}</button>}
+                      {booking.status === 'returned' && !submittedReviews.has(booking.id) && (
+                        <button onClick={() => setReviewTarget(booking)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"><Star size={13} /> {t('writeReview')}</button>
+                      )}
+                      {booking.status === 'returned' && submittedReviews.has(booking.id) && (
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 text-success text-xs font-semibold"><Star size={13} /> Review Submitted</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -106,6 +120,16 @@ export default function BookingsPage() {
         }
       </main>
       <Footer />
-    </div>);
 
+      {reviewTarget && (
+        <ReviewModal
+          equipmentName={reviewTarget.equipmentName}
+          bookingId={reviewTarget.id}
+          supplierName={reviewTarget.supplierName}
+          onClose={() => setReviewTarget(null)}
+          onSubmit={handleReviewSubmit}
+        />
+      )}
+    </div>
+  );
 }
