@@ -2,12 +2,19 @@
 
 import React, { useState } from 'react';
 import { Equipment } from './EquipmentListingContent';
-import { X, Calendar, Clock, ChevronRight, CheckCircle, MapPin, Star, Shield, AlertCircle } from 'lucide-react';
+import { X, Calendar, Clock, ChevronRight, CheckCircle, MapPin, Star, Shield, AlertCircle, User, Truck, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import RazorpayCheckout, { PaymentResult } from '@/components/RazorpayCheckout';
 
 interface Props { equipment: Equipment; onClose: () => void; }
 type Step = 'dates' | 'summary' | 'payment' | 'confirmation';
+
+// Mock driver data per equipment
+const DRIVER_PROFILES: Record<string, { name: string; photo: string; rating: number; trips: number; ratePerDay: number; available: boolean; experience: string; languages: string[] }> = {
+  'eq-001': { name: 'Ramesh Patil', photo: '/assets/images/farmer-man-hoe-pink-turban.png', rating: 4.8, trips: 142, ratePerDay: 600, available: true, experience: '8 years', languages: ['Marathi', 'Hindi'] },
+  'eq-003': { name: 'Sunil Mane', photo: '/assets/images/farmer-man-hoe-walking.png', rating: 4.7, trips: 98, ratePerDay: 800, available: true, experience: '6 years', languages: ['Marathi', 'Hindi', 'English'] },
+  'default': { name: 'Ganesh Kumar', photo: '/assets/images/farmer-man-hoe-yellow.png', rating: 4.5, trips: 67, ratePerDay: 500, available: true, experience: '4 years', languages: ['Hindi', 'Marathi'] },
+};
 
 export default function RentNowModal({ equipment, onClose }: Props) {
   const [step, setStep] = useState<Step>('dates');
@@ -17,11 +24,15 @@ export default function RentNowModal({ equipment, onClose }: Props) {
   const [endTime, setEndTime] = useState('18:00');
   const [bookingId, setBookingId] = useState('');
   const [paidPaymentId, setPaidPaymentId] = useState('');
+  const [withDriver, setWithDriver] = useState(false);
+
+  const driver = equipment.hasDriver ? (DRIVER_PROFILES[equipment.id] || DRIVER_PROFILES['default']) : null;
 
   const days = startDate && endDate ? Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1) : 1;
   const rentalAmount = days * equipment.rentPerDay;
-  const platformFee = Math.round(rentalAmount * 0.02);
-  const totalPayable = rentalAmount + equipment.deposit + platformFee;
+  const driverAmount = withDriver && driver ? days * driver.ratePerDay : 0;
+  const platformFee = Math.round((rentalAmount + driverAmount) * 0.02);
+  const totalPayable = rentalAmount + driverAmount + equipment.deposit + platformFee;
 
   const STEPS: { key: Step; label: string }[] = [{ key: 'dates', label: 'Dates' }, { key: 'summary', label: 'Summary' }, { key: 'payment', label: 'Payment' }, { key: 'confirmation', label: 'Done' }];
 
@@ -79,6 +90,65 @@ export default function RentNowModal({ equipment, onClose }: Props) {
                   </div>
                 </div>
               </div>
+
+              {/* Need a Driver? Toggle */}
+              {equipment.hasDriver && driver && (
+                <div className={`rounded-xl border-2 transition-all overflow-hidden ${withDriver ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                  <div className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-2">
+                      <Truck size={16} className={withDriver ? 'text-primary' : 'text-muted-foreground'} />
+                      <div>
+                        <p className="text-sm font-bold text-foreground">Need a Driver?</p>
+                        <p className="text-xs text-muted-foreground">+₹{driver.ratePerDay}/day</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setWithDriver(!withDriver)} className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold ${withDriver ? 'text-primary' : 'text-muted-foreground'}`}>{withDriver ? 'Yes' : 'No'}</span>
+                      {withDriver
+                        ? <ToggleRight size={28} className="text-primary" />
+                        : <ToggleLeft size={28} className="text-muted-foreground" />}
+                    </button>
+                  </div>
+
+                  {/* Driver profile — shown when toggle is on */}
+                  {withDriver && (
+                    <div className="border-t border-primary/20 p-3 bg-primary/5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <img src={driver.photo} alt={driver.name} className="w-10 h-10 rounded-full object-cover border-2 border-primary/30" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-foreground">{driver.name}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Star size={10} className="text-accent fill-accent" />
+                            <span>{driver.rating} · {driver.trips} trips · {driver.experience}</span>
+                          </div>
+                        </div>
+                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${driver.available ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger'}`}>
+                          {driver.available ? '● Available' : '● Busy'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {driver.languages.map((lang) => (
+                          <span key={lang} className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{lang}</span>
+                        ))}
+                        <span className="text-xs font-bold text-primary ml-auto font-tabular">₹{driver.ratePerDay}/day</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Option chips for equipment-only vs with-driver */}
+              {equipment.hasDriver && (
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => setWithDriver(false)} className={`py-2.5 px-3 rounded-xl border-2 text-sm font-semibold transition-all flex items-center justify-center gap-2 ${!withDriver ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:border-primary/40'}`}>
+                    <User size={14} /> Equipment Only
+                  </button>
+                  <button onClick={() => setWithDriver(true)} className={`py-2.5 px-3 rounded-xl border-2 text-sm font-semibold transition-all flex items-center justify-center gap-2 ${withDriver ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:border-primary/40'}`}>
+                    <Truck size={14} /> With Driver
+                  </button>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-1.5"><Calendar size={13} className="inline mr-1.5 text-primary" />Start Date</label>
@@ -100,9 +170,12 @@ export default function RentNowModal({ equipment, onClose }: Props) {
                 </div>
               </div>
               {startDate && endDate && (
-                <div className="bg-secondary/60 rounded-xl p-3 text-sm">
+                <div className="bg-secondary/60 rounded-xl p-3 text-sm space-y-1.5">
                   <div className="flex items-center justify-between"><span className="text-muted-foreground">Duration</span><span className="font-bold text-primary">{days} day{days > 1 ? 's' : ''}</span></div>
-                  <div className="flex items-center justify-between mt-1"><span className="text-muted-foreground">Estimated rental</span><span className="font-bold text-foreground font-tabular">₹{rentalAmount.toLocaleString('en-IN')}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Equipment rental</span><span className="font-bold font-tabular">₹{rentalAmount.toLocaleString('en-IN')}</span></div>
+                  {withDriver && driver && (
+                    <div className="flex items-center justify-between"><span className="text-muted-foreground">Driver charges</span><span className="font-bold text-primary font-tabular">₹{driverAmount.toLocaleString('en-IN')}</span></div>
+                  )}
                 </div>
               )}
               <div className="flex items-start gap-2 text-xs text-muted-foreground bg-warning-bg rounded-lg p-3">
@@ -119,8 +192,27 @@ export default function RentNowModal({ equipment, onClose }: Props) {
                 {[{ label: 'Equipment', value: equipment.name }, { label: 'Owner', value: equipment.owner }, { label: 'Start', value: `${startDate} · ${startTime}` }, { label: 'End', value: `${endDate} · ${endTime}` }, { label: 'Duration', value: `${days} day${days > 1 ? 's' : ''}` }].map((row) => (
                   <div key={`summary-${row.label}`} className="flex justify-between"><span className="text-muted-foreground">{row.label}</span><span className="font-semibold text-foreground text-right max-w-[200px] font-tabular">{row.value}</span></div>
                 ))}
+
+                {/* Driver summary */}
+                {withDriver && driver && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 mt-2">
+                    <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><Truck size={12} /> Driver Included</p>
+                    <div className="flex items-center gap-2">
+                      <img src={driver.photo} alt={driver.name} className="w-8 h-8 rounded-full object-cover" />
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">{driver.name}</p>
+                        <p className="text-xs text-muted-foreground">{driver.rating}★ · {driver.trips} trips</p>
+                      </div>
+                      <span className="ml-auto text-xs font-bold text-primary font-tabular">₹{driverAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="border-t border-border pt-2.5 space-y-2">
                   <div className="flex justify-between"><span className="text-muted-foreground">Rental ({days}d × ₹{equipment.rentPerDay.toLocaleString('en-IN')})</span><span className="font-tabular">₹{rentalAmount.toLocaleString('en-IN')}</span></div>
+                  {withDriver && driver && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">Driver ({days}d × ₹{driver.ratePerDay})</span><span className="font-tabular text-primary">₹{driverAmount.toLocaleString('en-IN')}</span></div>
+                  )}
                   <div className="flex justify-between"><span className="text-muted-foreground">Security Deposit</span><span className="text-warning font-semibold font-tabular">₹{equipment.deposit.toLocaleString('en-IN')}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Platform Fee (2%)</span><span className="font-tabular">₹{platformFee.toLocaleString('en-IN')}</span></div>
                 </div>
@@ -141,6 +233,9 @@ export default function RentNowModal({ equipment, onClose }: Props) {
               </div>
               <div className="bg-muted/40 rounded-xl p-3 text-xs space-y-1.5">
                 <div className="flex justify-between text-muted-foreground"><span>Rental ({days}d)</span><span className="font-tabular">₹{rentalAmount.toLocaleString('en-IN')}</span></div>
+                {withDriver && driver && (
+                  <div className="flex justify-between text-primary"><span>Driver ({days}d)</span><span className="font-tabular">₹{driverAmount.toLocaleString('en-IN')}</span></div>
+                )}
                 <div className="flex justify-between text-muted-foreground"><span>Security Deposit</span><span className="font-tabular text-warning">₹{equipment.deposit.toLocaleString('en-IN')}</span></div>
                 <div className="flex justify-between text-muted-foreground"><span>Platform Fee (2%)</span><span className="font-tabular">₹{platformFee.toLocaleString('en-IN')}</span></div>
                 <div className="flex justify-between font-bold text-foreground border-t border-border pt-1.5"><span>Total</span><span className="font-tabular text-primary">₹{totalPayable.toLocaleString('en-IN')}</span></div>
@@ -150,7 +245,7 @@ export default function RentNowModal({ equipment, onClose }: Props) {
                   <div key={m.label} className="bg-muted/40 rounded-lg py-2 px-1"><div className="text-lg mb-0.5">{m.icon}</div><div className="font-medium">{m.label}</div></div>
                 ))}
               </div>
-              <RazorpayCheckout amount={totalPayable} receipt={`kisan_${equipment.id}_${Date.now()}`} notes={{ equipmentId: equipment.id, equipmentName: equipment.name, startDate, endDate }} description={`Rental: ${equipment.name} (${days} day${days > 1 ? 's' : ''})`} buttonText={`Pay ₹${totalPayable.toLocaleString('en-IN')} via Razorpay`} loadingText="Processing Payment..." onSuccess={handlePaymentSuccess} onError={(error) => toast.error(`Payment failed: ${error}`)} onDismiss={() => toast.info('Payment cancelled')} />
+              <RazorpayCheckout amount={totalPayable} receipt={`kisan_${equipment.id}_${Date.now()}`} notes={{ equipmentId: equipment.id, equipmentName: equipment.name, startDate, endDate, withDriver: String(withDriver) }} description={`Rental: ${equipment.name} (${days} day${days > 1 ? 's' : ''})${withDriver ? ' + Driver' : ''}`} buttonText={`Pay ₹${totalPayable.toLocaleString('en-IN')} via Razorpay`} loadingText="Processing Payment..." onSuccess={handlePaymentSuccess} onError={(error) => toast.error(`Payment failed: ${error}`)} onDismiss={() => toast.info('Payment cancelled')} />
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-lg p-2.5">
                 <Shield size={13} className="text-success shrink-0" />100% secure payments powered by Razorpay. Supports UPI, Cards &amp; Net Banking.
               </div>
@@ -166,6 +261,9 @@ export default function RentNowModal({ equipment, onClose }: Props) {
                 <div className="flex justify-between"><span className="text-muted-foreground">Booking ID</span><span className="font-bold text-primary font-tabular">{bookingId}</span></div>
                 {paidPaymentId && <div className="flex justify-between"><span className="text-muted-foreground">Payment ID</span><span className="font-mono text-xs text-foreground truncate max-w-[160px]">{paidPaymentId}</span></div>}
                 <div className="flex justify-between"><span className="text-muted-foreground">Equipment</span><span className="font-semibold text-foreground">{equipment.name}</span></div>
+                {withDriver && driver && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Driver</span><span className="font-semibold text-primary">{driver.name}</span></div>
+                )}
                 <div className="flex justify-between"><span className="text-muted-foreground">Total Paid</span><span className="font-bold text-foreground font-tabular">₹{totalPayable.toLocaleString('en-IN')}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="badge-green">Payment Verified ✓</span></div>
               </div>

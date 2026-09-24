@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import AppImage from '@/components/ui/AppImage';
 import { Equipment } from './EquipmentListingContent';
-import { MapPin, Star, Heart, Tag, ShoppingCart, Phone, Eye } from 'lucide-react';
+import { MapPin, Star, Heart, Tag, ShoppingCart, Phone, Eye, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import RentNowModal from './RentNowModal';
 import Link from 'next/link';
@@ -48,7 +48,14 @@ export default function EquipmentGrid({ equipment }: Props) {
             <div className="p-4 flex flex-col flex-1">
               <div className="mb-2">
                 <h3 className="font-bold text-sm text-foreground line-clamp-2 leading-snug mb-1">{item.name}</h3>
-                <p className="text-xs text-muted-foreground">{item.brand} · {item.specs}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground">{item.brand} · {item.specs}</p>
+                  {item.hasDriver && (
+                    <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                      <Truck size={9} /> Driver
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-1">

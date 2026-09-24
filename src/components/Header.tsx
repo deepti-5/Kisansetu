@@ -42,6 +42,7 @@ export default function Header() {
     { icon: Bell, label: t('notifications'), href: '/account/notifications' },
     { icon: Globe, label: t('changeLanguage'), href: '/account/language' },
     { icon: Store, label: t('supplierDashboard'), href: '/supplier/dashboard' },
+    { icon: MapPin, label: 'Select Service Area', href: '/location-selector' },
     { icon: HelpCircle, label: t('helpSupport'), href: '/help' },
     { icon: FileText, label: t('policies'), href: '/policies' },
     { icon: LogOut, label: t('logout'), href: '/sign-up-login-screen', danger: true },
