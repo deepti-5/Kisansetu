@@ -258,9 +258,9 @@ function RentalPaymentContent() {
       console.error('Email send error:', err);
     }
 
-    toast.success('Payment successful! Redirecting to booking confirmation...');
+    toast.success('Payment successful! Redirecting to order confirmation...');
     setTimeout(() => {
-      router.push(`/booking-confirmation?id=${order.bookingRef}`);
+      router.push(`/order-confirmation?id=${order.bookingRef}`);
     }, 1500);
   }
 
