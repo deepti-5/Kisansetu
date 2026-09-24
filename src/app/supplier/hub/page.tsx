@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { LayoutDashboard, Package, Calendar, IndianRupee, User, Settings, Plus, Star, CheckCircle, Clock, XCircle, Eye, Edit, Bell, ChevronRight, ArrowUpRight, Phone, MapPin, Camera, Save, TrendingUp, Tractor, Wrench, LogOut, Shield, Edit3, BarChart2, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, Package, Calendar, IndianRupee, User, Settings, Plus, Star, CheckCircle, Clock, XCircle, Eye, Edit, Bell, ChevronRight, ArrowUpRight, Phone, MapPin, Camera, Save, TrendingUp, Tractor, Wrench, LogOut, Shield, Edit3, BarChart2, AlertCircle, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import ReviewsList, { SAMPLE_REVIEWS } from '@/app/components/ReviewsList';
 
 interface Listing {
   id: string;name: string;category: string;type: 'tractor' | 'equipment';
@@ -32,8 +33,33 @@ const BOOKINGS: BookingReq[] = [
 { id: 'BKG12340', equipment: 'Mahindra Yuvo 575 DI Tractor', farmer: 'Mohan Kulkarni', phone: '+91 76543 33333', startDate: '2026-09-10', endDate: '2026-09-12', amount: 7500, status: 'accepted', type: 'rent' },
 { id: 'BKG12338', equipment: 'John Deere 5050D Tractor', farmer: 'Ramesh Patil', phone: '+91 65432 44444', startDate: '2026-09-05', endDate: '2026-09-07', amount: 9600, status: 'accepted', type: 'rent' }];
 
+const WEEKLY_REVENUE = [
+  { week: 'W1 Aug', amount: 12500 },
+  { week: 'W2 Aug', amount: 18200 },
+  { week: 'W3 Aug', amount: 9800 },
+  { week: 'W4 Aug', amount: 22400 },
+  { week: 'W1 Sep', amount: 15600 },
+  { week: 'W2 Sep', amount: 28900 },
+  { week: 'W3 Sep', amount: 19300 },
+  { week: 'W4 Sep', amount: 15000 },
+];
 
-type Tab = 'overview' | 'listings' | 'bookings' | 'earnings' | 'profile' | 'settings';
+const MONTHLY_REVENUE = [
+  { month: 'Apr', amount: 38000 },
+  { month: 'May', amount: 52000 },
+  { month: 'Jun', amount: 61000 },
+  { month: 'Jul', amount: 47000 },
+  { month: 'Aug', amount: 62900 },
+  { month: 'Sep', amount: 78800 },
+];
+
+const UPCOMING_BOOKINGS = [
+  { id: 'BKG12350', equipment: 'Mahindra Yuvo 575 DI Tractor', farmer: 'Anil Sharma', startDate: '2026-09-26', endDate: '2026-09-28', amount: 7500, daysUntil: 2 },
+  { id: 'BKG12351', equipment: 'John Deere 5050D Tractor', farmer: 'Kavita More', startDate: '2026-09-30', endDate: '2026-10-02', amount: 9600, daysUntil: 6 },
+  { id: 'BKG12352', equipment: 'Rotavator 7 Feet Heavy Duty', farmer: 'Suresh Patil', startDate: '2026-10-05', endDate: '2026-10-06', amount: 2400, daysUntil: 11 },
+];
+
+type Tab = 'overview' | 'listings' | 'bookings' | 'earnings' | 'reviews' | 'profile' | 'settings';
 
 interface ProfileData {name: string;phone: string;email: string;village: string;district: string;state: string;pincode: string;businessName: string;experience: string;}
 
@@ -42,6 +68,7 @@ export default function SupplierHub() {
   const [bookings, setBookings] = useState(BOOKINGS);
   const [listingFilter, setListingFilter] = useState<'all' | 'tractor' | 'equipment'>('all');
   const [editing, setEditing] = useState(false);
+  const [revenuePeriod, setRevenuePeriod] = useState<'weekly' | 'monthly'>('weekly');
   const [profile, setProfile] = useState<ProfileData>({
     name: 'Rajesh Patil', phone: '+91 98765 43210', email: 'rajesh.patil@kisansetu.in',
     village: 'Hadapsar', district: 'Pune', state: 'Maharashtra', pincode: '411028',
@@ -53,16 +80,18 @@ export default function SupplierHub() {
   const activeListings = LISTINGS.filter((l) => l.status === 'active').length;
   const pendingBookings = bookings.filter((b) => b.status === 'pending').length;
   const acceptedBookings = bookings.filter((b) => b.status === 'accepted').length;
+  const filteredListings = LISTINGS.filter((l) => listingFilter === 'all' ? true : l.type === listingFilter);
 
-  const filteredListings = LISTINGS.filter((l) =>
-  listingFilter === 'all' ? true : l.type === listingFilter
-  );
+  const revenueData = revenuePeriod === 'weekly' ? WEEKLY_REVENUE : MONTHLY_REVENUE;
+  const maxRevenue = Math.max(...revenueData.map((d) => d.amount));
+  const topEquipment = [...LISTINGS].sort((a, b) => b.earnings - a.earnings).slice(0, 3);
 
   const TABS: {key: Tab;label: string;icon: React.FC<{size?: number;className?: string;}>;}[] = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard },
   { key: 'listings', label: 'My Listings', icon: Package },
   { key: 'bookings', label: 'Bookings', icon: Calendar },
   { key: 'earnings', label: 'Earnings', icon: IndianRupee },
+  { key: 'reviews', label: 'Reviews', icon: Star },
   { key: 'profile', label: 'Profile', icon: User },
   { key: 'settings', label: 'Settings', icon: Settings }];
 
@@ -111,6 +140,7 @@ export default function SupplierHub() {
               {t.key === 'bookings' && pendingBookings > 0 &&
             <span className="w-5 h-5 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">{pendingBookings}</span>
             }
+              {t.key === 'reviews' && <span className="w-5 h-5 rounded-full bg-warning/20 text-warning text-[10px] font-bold flex items-center justify-center">{SAMPLE_REVIEWS.length}</span>}
             </button>
           )}
         </div>
@@ -134,6 +164,100 @@ export default function SupplierHub() {
                   <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
                 </div>
             )}
+            </div>
+
+            {/* Revenue Trend Chart */}
+            <div className="bg-card rounded-2xl border border-border p-5">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <h2 className="font-bold text-base text-foreground flex items-center gap-2"><TrendingUp size={16} className="text-primary" /> Revenue Trends</h2>
+                <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                  {(['weekly', 'monthly'] as const).map((p) => (
+                    <button key={p} onClick={() => setRevenuePeriod(p)} className={`px-3 py-1 rounded-md text-xs font-semibold transition-all capitalize ${revenuePeriod === p ? 'bg-card shadow text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{p}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-end gap-2 h-32">
+                {revenueData.map((d, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                    <div className="relative w-full">
+                      <div
+                        className="w-full bg-primary/20 rounded-t-md group-hover:bg-primary/40 transition-colors cursor-pointer"
+                        style={{ height: `${(d.amount / maxRevenue) * 100}px` }}
+                        title={`₹${d.amount.toLocaleString('en-IN')}`}
+                      >
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-foreground text-background text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                          ₹{(d.amount / 1000).toFixed(0)}k
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground text-center leading-tight">{revenuePeriod === 'weekly' ? (d as typeof WEEKLY_REVENUE[0]).week : (d as typeof MONTHLY_REVENUE[0]).month}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">This {revenuePeriod === 'weekly' ? 'Week' : 'Month'}</p>
+                  <p className="font-bold text-sm text-success">₹{revenueData[revenueData.length - 1].amount.toLocaleString('en-IN')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Avg {revenuePeriod === 'weekly' ? 'Weekly' : 'Monthly'}</p>
+                  <p className="font-bold text-sm text-foreground">₹{Math.round(revenueData.reduce((s, d) => s + d.amount, 0) / revenueData.length).toLocaleString('en-IN')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Best {revenuePeriod === 'weekly' ? 'Week' : 'Month'}</p>
+                  <p className="font-bold text-sm text-primary">₹{maxRevenue.toLocaleString('en-IN')}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Top Performing Equipment */}
+              <div className="bg-card rounded-2xl border border-border p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-bold text-base text-foreground flex items-center gap-2"><BarChart2 size={16} className="text-primary" /> Top Equipment</h2>
+                  <button onClick={() => setTab('listings')} className="text-sm text-primary font-semibold flex items-center gap-1 hover:underline">View All <ChevronRight size={14} /></button>
+                </div>
+                <div className="space-y-3">
+                  {topEquipment.map((l, idx) => (
+                    <div key={l.id} className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${idx === 0 ? 'bg-warning text-white' : idx === 1 ? 'bg-muted-foreground/30 text-foreground' : 'bg-muted text-muted-foreground'}`}>{idx + 1}</span>
+                      <img src={l.image} alt={l.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate">{l.name}</p>
+                        <p className="text-xs text-muted-foreground">{l.bookings} bookings · {l.rating}★</p>
+                      </div>
+                      <p className="font-bold text-success text-sm shrink-0">₹{(l.earnings / 1000).toFixed(0)}k</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Upcoming Bookings Forecast */}
+              <div className="bg-card rounded-2xl border border-border p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-bold text-base text-foreground flex items-center gap-2"><Calendar size={16} className="text-primary" /> Upcoming Forecast</h2>
+                  <button onClick={() => setTab('bookings')} className="text-sm text-primary font-semibold flex items-center gap-1 hover:underline">All <ChevronRight size={14} /></button>
+                </div>
+                <div className="space-y-3">
+                  {UPCOMING_BOOKINGS.map((b) => (
+                    <div key={b.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
+                      <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 ${b.daysUntil <= 3 ? 'bg-warning/15 text-warning' : 'bg-primary/10 text-primary'}`}>
+                        <span className="text-xs font-extrabold leading-none">{b.daysUntil}</span>
+                        <span className="text-[9px] leading-none mt-0.5">days</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate">{b.equipment}</p>
+                        <p className="text-xs text-muted-foreground">{b.farmer} · {b.startDate}</p>
+                      </div>
+                      <p className="font-bold text-primary text-sm shrink-0">₹{b.amount.toLocaleString('en-IN')}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">Projected next 30 days</p>
+                  <p className="font-bold text-success text-sm">₹{UPCOMING_BOOKINGS.reduce((s, b) => s + b.amount, 0).toLocaleString('en-IN')}</p>
+                </div>
+              </div>
             </div>
 
             {pendingBookings > 0 &&
@@ -322,6 +446,35 @@ export default function SupplierHub() {
               </div>
             </div>
 
+            {/* Revenue Chart in Earnings Tab */}
+            <div className="bg-card rounded-2xl border border-border p-5">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <h2 className="font-bold text-base text-foreground flex items-center gap-2"><TrendingUp size={16} className="text-primary" /> Revenue Trends</h2>
+                <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                  {(['weekly', 'monthly'] as const).map((p) => (
+                    <button key={p} onClick={() => setRevenuePeriod(p)} className={`px-3 py-1 rounded-md text-xs font-semibold transition-all capitalize ${revenuePeriod === p ? 'bg-card shadow text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{p}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-end gap-2 h-40">
+                {revenueData.map((d, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                    <div className="relative w-full flex items-end justify-center" style={{ height: '140px' }}>
+                      <div
+                        className="w-full bg-primary/20 hover:bg-primary/40 rounded-t-md transition-colors cursor-pointer relative"
+                        style={{ height: `${(d.amount / maxRevenue) * 130}px` }}
+                      >
+                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-foreground text-background text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap z-10">
+                          ₹{(d.amount / 1000).toFixed(0)}k
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground text-center leading-tight">{revenuePeriod === 'weekly' ? (d as typeof WEEKLY_REVENUE[0]).week : (d as typeof MONTHLY_REVENUE[0]).month}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="bg-card rounded-2xl border border-border p-5">
               <h2 className="font-bold text-base text-foreground mb-4 flex items-center gap-2"><BarChart2 size={16} className="text-primary" /> Earnings by Listing</h2>
               <div className="space-y-3">
@@ -331,6 +484,9 @@ export default function SupplierHub() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate">{l.name}</p>
                       <p className="text-xs text-muted-foreground">{l.bookings} bookings · {l.rating}★</p>
+                      <div className="w-full h-1.5 bg-muted rounded-full mt-1.5">
+                        <div className="h-full bg-primary rounded-full" style={{ width: `${(l.earnings / totalEarnings) * 100}%` }} />
+                      </div>
                     </div>
                     <p className="font-bold text-success shrink-0">₹{l.earnings.toLocaleString('en-IN')}</p>
                   </div>
@@ -362,6 +518,31 @@ export default function SupplierHub() {
           </div>
         }
 
+        {/* REVIEWS TAB */}
+        {tab === 'reviews' &&
+        <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+            { label: 'Total Reviews', value: SAMPLE_REVIEWS.length, color: 'text-foreground', bg: 'bg-primary/10', icon: MessageSquare },
+            { label: 'Avg Rating', value: '4.5★', color: 'text-warning', bg: 'bg-warning/10', icon: Star },
+            { label: '5-Star Reviews', value: SAMPLE_REVIEWS.filter((r) => r.rating === 5).length, color: 'text-success', bg: 'bg-success/10', icon: Star },
+            { label: 'Response Rate', value: '92%', color: 'text-primary', bg: 'bg-primary/10', icon: CheckCircle }].
+            map((s) =>
+            <div key={s.label} className="bg-card rounded-2xl border border-border p-4">
+                  <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center mb-2`}><s.icon size={16} className={s.color} /></div>
+                  <p className={`text-xl font-extrabold ${s.color}`}>{s.value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+                </div>
+            )}
+            </div>
+
+            <div className="bg-card rounded-2xl border border-border p-5">
+              <h2 className="font-bold text-base text-foreground mb-4 flex items-center gap-2"><Star size={16} className="text-warning" /> Customer Reviews</h2>
+              <ReviewsList reviews={SAMPLE_REVIEWS} showEquipmentName />
+            </div>
+          </div>
+        }
+
         {/* PROFILE TAB */}
         {tab === 'profile' &&
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -388,6 +569,7 @@ export default function SupplierHub() {
               { icon: Package, label: 'My Listings', action: () => setTab('listings') },
               { icon: Calendar, label: 'Bookings', action: () => setTab('bookings') },
               { icon: IndianRupee, label: 'Earnings', action: () => setTab('earnings') },
+              { icon: Star, label: 'Reviews', action: () => setTab('reviews') },
               { icon: Settings, label: 'Settings', action: () => setTab('settings') }].
               map((item, i, arr) =>
               <button key={item.label} onClick={item.action} className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted transition-colors text-left ${i < arr.length - 1 ? 'border-b border-border' : ''}`}>

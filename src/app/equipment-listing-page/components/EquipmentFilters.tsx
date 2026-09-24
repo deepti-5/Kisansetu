@@ -13,9 +13,10 @@ interface Props {
 
 const RATINGS = [4.5, 4.0, 3.5, 3.0];
 const DISTANCES = [5, 10, 20, 30, 50];
+const LOCATIONS = ['Pune', 'Nashik', 'Kolhapur', 'Aurangabad', 'Nagpur', 'Solapur'];
 
 export default function EquipmentFilters({ filters, onChange }: Props) {
-  const [openSections, setOpenSections] = React.useState({ category: true, listingType: true, price: true, rating: true, availability: true, distance: true });
+  const [openSections, setOpenSections] = React.useState({ category: true, listingType: true, supplierType: true, price: true, rating: true, availability: true, location: true, distance: true });
 
   function toggleSection(key: keyof typeof openSections) {
     setOpenSections((p) => ({ ...p, [key]: !p[key] }));
@@ -60,6 +61,34 @@ export default function EquipmentFilters({ filters, onChange }: Props) {
                 <button key={`type-${type}`} onClick={() => onChange({ ...filters, listingType: type })} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-150 capitalize ${filters.listingType === type ? 'gradient-green text-white border-transparent' : 'border-border text-muted-foreground hover:border-primary hover:text-primary'}`}>
                   {type === 'all' ? 'All' : type === 'rent' ? 'For Rent' : 'For Buy'}
                 </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Supplier Type Filter */}
+        <div className="p-4">
+          <button onClick={() => toggleSection('supplierType')} className="flex items-center justify-between w-full mb-3">
+            <span className="text-sm font-semibold text-foreground">Supplier Type</span>
+            {openSections.supplierType ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+          </button>
+          {openSections.supplierType && (
+            <div className="space-y-2">
+              {([
+                { value: 'all', label: 'All Suppliers' },
+                { value: 'tractor-only', label: 'Tractor Only' },
+                { value: 'with-driver', label: 'Tractor + Driver' },
+              ] as const).map((opt) => (
+                <label key={`stype-${opt.value}`} className="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="supplierType"
+                    checked={filters.supplierType === opt.value}
+                    onChange={() => onChange({ ...filters, supplierType: opt.value })}
+                    className="w-4 h-4 accent-primary"
+                  />
+                  <span className="text-sm text-foreground group-hover:text-primary transition-colors">{opt.label}</span>
+                </label>
               ))}
             </div>
           )}
@@ -117,6 +146,40 @@ export default function EquipmentFilters({ filters, onChange }: Props) {
               </div>
               <span className="text-sm text-foreground">Available equipment only</span>
             </label>
+          )}
+        </div>
+
+        {/* Location Filter */}
+        <div className="p-4">
+          <button onClick={() => toggleSection('location')} className="flex items-center justify-between w-full mb-3">
+            <span className="text-sm font-semibold text-foreground">Location</span>
+            {openSections.location ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+          </button>
+          {openSections.location && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2.5 cursor-pointer group">
+                <input
+                  type="radio"
+                  name="location"
+                  checked={filters.locationFilter === ''}
+                  onChange={() => onChange({ ...filters, locationFilter: '' })}
+                  className="w-4 h-4 accent-primary"
+                />
+                <span className="text-sm text-foreground group-hover:text-primary transition-colors">All Locations</span>
+              </label>
+              {LOCATIONS.map((loc) => (
+                <label key={`loc-${loc}`} className="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="location"
+                    checked={filters.locationFilter === loc}
+                    onChange={() => onChange({ ...filters, locationFilter: loc })}
+                    className="w-4 h-4 accent-primary"
+                  />
+                  <span className="text-sm text-foreground group-hover:text-primary transition-colors">{loc}</span>
+                </label>
+              ))}
+            </div>
           )}
         </div>
 
