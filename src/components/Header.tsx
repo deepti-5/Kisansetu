@@ -34,6 +34,7 @@ export default function Header() {
     { label: t('equipment'), href: '/equipment-listing-page' },
     { label: t('labour'), href: '/labour' },
     { label: t('agri'), href: '/agri' },
+    { label: 'Discover', href: '/discovery' },
     { label: t('howItWorks'), href: '/how-it-works' },
     { label: t('help'), href: '/help' },
   ];
