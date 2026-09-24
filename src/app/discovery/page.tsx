@@ -27,8 +27,8 @@ interface DiscoveryItem {
   village: string;
   district: string;
   available: boolean;
-  hasDriver?: boolean; // equipment only
-  specialty?: string; // labour only
+  hasDriver?: boolean;
+  specialty?: string;
   languages?: string[];
 }
 
@@ -94,17 +94,17 @@ function FilterPanel({ filters, onChange, onReset }: {filters: Filters;onChange:
     <div className="bg-card rounded-2xl border border-border overflow-hidden sticky top-20">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <span className="font-bold text-sm text-foreground flex items-center gap-2"><Filter size={14} className="text-primary" /> Filters</span>
-        <button onClick={onReset} className="text-xs text-primary font-semibold hover:underline">Reset all</button>
+        <button onClick={onReset} className="text-sm text-primary font-semibold hover:underline min-h-[44px] min-w-[44px] flex items-center justify-end">Reset all</button>
       </div>
 
       <div className="divide-y divide-border max-h-[calc(100vh-200px)] overflow-y-auto">
         {/* Category */}
         <div className="p-4">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Category</p>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {categories.map((cat) =>
             <button key={cat} onClick={() => onChange({ ...filters, category: cat })}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${filters.category === cat ? 'bg-primary text-white border-primary' : 'border-border text-muted-foreground hover:border-primary/50 hover:text-primary'}`}>
+            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all min-h-[44px] ${filters.category === cat ? 'bg-primary text-white border-primary' : 'border-border text-muted-foreground hover:border-primary/50 hover:text-primary'}`}>
                 {cat}
               </button>
             )}
@@ -113,22 +113,22 @@ function FilterPanel({ filters, onChange, onReset }: {filters: Filters;onChange:
 
         {/* Price */}
         <div className="p-4">
-          <button onClick={() => toggle('price')} className="flex items-center justify-between w-full mb-3">
+          <button onClick={() => toggle('price')} className="flex items-center justify-between w-full mb-3 min-h-[44px]">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Price / Day</span>
-            {open.price ? <ChevronUp size={13} className="text-muted-foreground" /> : <ChevronDown size={13} className="text-muted-foreground" />}
+            {open.price ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
           </button>
           {open.price &&
           <div>
-              <div className="flex justify-between text-xs text-muted-foreground mb-2">
+              <div className="flex justify-between text-sm text-muted-foreground mb-2">
                 <span>₹{filters.minPrice}</span><span>₹{filters.maxPrice.toLocaleString('en-IN')}</span>
               </div>
               <input type="range" min={0} max={5000} step={100} value={filters.maxPrice}
             onChange={(e) => onChange({ ...filters, maxPrice: Number(e.target.value) })}
-            className="w-full accent-primary" />
-              <div className="flex gap-1.5 mt-2">
+            className="w-full accent-primary h-2" style={{ touchAction: 'none' }} />
+              <div className="flex gap-2 mt-3">
                 {[500, 1000, 2000, 5000].map((p) =>
               <button key={p} onClick={() => onChange({ ...filters, maxPrice: p })}
-              className={`flex-1 py-1 rounded text-xs font-medium transition-colors ${filters.maxPrice === p ? 'bg-primary text-white' : 'bg-muted text-muted-foreground hover:bg-secondary'}`}>
+              className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] ${filters.maxPrice === p ? 'bg-primary text-white' : 'bg-muted text-muted-foreground hover:bg-secondary'}`}>
                     ≤{p >= 1000 ? `${p / 1000}k` : p}
                   </button>
               )}
@@ -139,17 +139,17 @@ function FilterPanel({ filters, onChange, onReset }: {filters: Filters;onChange:
 
         {/* Rating */}
         <div className="p-4">
-          <button onClick={() => toggle('rating')} className="flex items-center justify-between w-full mb-3">
+          <button onClick={() => toggle('rating')} className="flex items-center justify-between w-full mb-3 min-h-[44px]">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Min Rating</span>
-            {open.rating ? <ChevronUp size={13} className="text-muted-foreground" /> : <ChevronDown size={13} className="text-muted-foreground" />}
+            {open.rating ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
           </button>
           {open.rating &&
           <div className="space-y-1">
               {[4.5, 4.0, 3.5, 3.0].map((r) =>
             <button key={r} onClick={() => onChange({ ...filters, minRating: filters.minRating === r ? 0 : r })}
-            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${filters.minRating === r ? 'bg-secondary border border-primary/30 text-primary' : 'hover:bg-muted text-foreground border border-transparent'}`}>
-                  <span className="text-accent text-xs">{'★'.repeat(Math.floor(r))}</span>
-                  <span className="font-semibold text-xs">{r}+</span>
+            className={`w-full flex items-center gap-2 px-3 py-3 rounded-xl text-sm transition-all min-h-[48px] ${filters.minRating === r ? 'bg-secondary border border-primary/30 text-primary' : 'hover:bg-muted text-foreground border border-transparent'}`}>
+                  <span className="text-accent text-sm">{'★'.repeat(Math.floor(r))}</span>
+                  <span className="font-semibold text-sm">{r}+</span>
                 </button>
             )}
             </div>
@@ -158,23 +158,23 @@ function FilterPanel({ filters, onChange, onReset }: {filters: Filters;onChange:
 
         {/* Location */}
         <div className="p-4">
-          <button onClick={() => toggle('location')} className="flex items-center justify-between w-full mb-3">
+          <button onClick={() => toggle('location')} className="flex items-center justify-between w-full mb-3 min-h-[44px]">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Location</span>
-            {open.location ? <ChevronUp size={13} className="text-muted-foreground" /> : <ChevronDown size={13} className="text-muted-foreground" />}
+            {open.location ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
           </button>
           {open.location &&
           <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-foreground mb-1.5">District</label>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">District</label>
                 <select value={filters.district} onChange={(e) => onChange({ ...filters, district: e.target.value, village: 'All Villages' })}
-              className="w-full input-field text-sm py-2">
+              className="w-full input-field text-sm py-3 min-h-[48px]">
                   {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-foreground mb-1.5">Village</label>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">Village</label>
                 <select value={filters.village} onChange={(e) => onChange({ ...filters, village: e.target.value })}
-              className="w-full input-field text-sm py-2">
+              className="w-full input-field text-sm py-3 min-h-[48px]">
                   {VILLAGES.map((v) => <option key={v}>{v}</option>)}
                 </select>
               </div>
@@ -184,24 +184,24 @@ function FilterPanel({ filters, onChange, onReset }: {filters: Filters;onChange:
 
         {/* Availability */}
         <div className="p-4">
-          <button onClick={() => toggle('availability')} className="flex items-center justify-between w-full mb-3">
+          <button onClick={() => toggle('availability')} className="flex items-center justify-between w-full mb-3 min-h-[44px]">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Availability</span>
-            {open.availability ? <ChevronUp size={13} className="text-muted-foreground" /> : <ChevronDown size={13} className="text-muted-foreground" />}
+            {open.availability ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
           </button>
           {open.availability &&
           <div className="space-y-3">
-              <label className="flex items-center gap-2.5 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer min-h-[48px]">
                 <div onClick={() => onChange({ ...filters, availableOnly: !filters.availableOnly })}
-              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${filters.availableOnly ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
-                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.availableOnly ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${filters.availableOnly ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.availableOnly ? 'translate-x-7' : 'translate-x-1'}`} />
                 </div>
                 <span className="text-sm text-foreground">Available now only</span>
               </label>
               {filters.kind !== 'labour' &&
-            <label className="flex items-center gap-2.5 cursor-pointer">
+            <label className="flex items-center gap-3 cursor-pointer min-h-[48px]">
                   <div onClick={() => onChange({ ...filters, driverOnly: !filters.driverOnly })}
-              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${filters.driverOnly ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
-                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.driverOnly ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${filters.driverOnly ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters.driverOnly ? 'translate-x-7' : 'translate-x-1'}`} />
                   </div>
                   <span className="text-sm text-foreground">With driver only</span>
                 </label>
@@ -222,12 +222,12 @@ function DiscoveryCard({ item }: {item: DiscoveryItem;}) {
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden group hover:shadow-lg transition-all duration-200 flex flex-col">
-      <div className="relative h-44 overflow-hidden shrink-0">
+      <div className="relative h-48 sm:h-44 overflow-hidden shrink-0">
         <AppImage src={item.image} alt={item.imageAlt} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         <button onClick={() => setWishlisted((p) => !p)}
-        className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all ${wishlisted ? 'bg-danger text-white scale-110' : 'bg-white/80 backdrop-blur-sm text-muted-foreground hover:bg-white hover:text-danger'}`}>
-          <Heart size={14} fill={wishlisted ? 'currentColor' : 'none'} />
+        className={`absolute top-3 right-3 w-11 h-11 rounded-full flex items-center justify-center transition-all ${wishlisted ? 'bg-danger text-white scale-110' : 'bg-white/80 backdrop-blur-sm text-muted-foreground hover:bg-white hover:text-danger'}`}>
+          <Heart size={16} fill={wishlisted ? 'currentColor' : 'none'} />
         </button>
         <div className="absolute top-3 left-3 flex gap-1.5">
           <span className="badge-green text-xs">{item.category}</span>
@@ -252,7 +252,7 @@ function DiscoveryCard({ item }: {item: DiscoveryItem;}) {
 
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1">
-            <Star size={11} className="text-accent fill-accent" />
+            <Star size={12} className="text-accent fill-accent" />
             <span className="text-xs font-bold text-foreground">{item.rating}</span>
             <span className="text-xs text-muted-foreground">({item.reviews})</span>
           </div>
@@ -276,11 +276,11 @@ function DiscoveryCard({ item }: {item: DiscoveryItem;}) {
         }
 
         <div className="mt-auto flex gap-2">
-          <Link href={href} className="flex-1 btn-primary py-2.5 text-xs text-center font-bold">
+          <Link href={href} className="flex-1 btn-primary py-3 text-sm text-center font-bold min-h-[48px] flex items-center justify-center">
             {item.kind === 'equipment' ? 'Rent Now' : 'Hire Now'}
           </Link>
-          <button className="w-9 h-9 rounded-xl border border-border flex items-center justify-center hover:bg-muted transition-colors">
-            <Phone size={14} className="text-muted-foreground" />
+          <button className="w-12 h-12 rounded-xl border border-border flex items-center justify-center hover:bg-muted transition-colors">
+            <Phone size={16} className="text-muted-foreground" />
           </button>
         </div>
       </div>
@@ -332,48 +332,48 @@ export default function DiscoveryPage() {
       <main className="max-w-screen-xl mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
-          <Link href="/" className="hover:text-primary">Home</Link>
+          <Link href="/" className="hover:text-primary min-h-[44px] flex items-center">Home</Link>
           <ChevronRight size={14} />
           <span className="text-foreground font-medium">Discover</span>
         </div>
 
         {/* Hero search bar */}
-        <div className="bg-card rounded-2xl border border-border p-5 mb-6">
-          <h1 className="text-2xl font-extrabold text-foreground mb-1">Find Equipment & Labour</h1>
+        <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 mb-6">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-foreground mb-1">Find Equipment & Labour</h1>
           <p className="text-sm text-muted-foreground mb-4">Search by name, category, village, or district</p>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <div className="relative flex-1">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 value={filters.search}
                 onChange={(e) => setFilters((p) => ({ ...p, search: e.target.value }))}
-                placeholder="Search tractors, harvesters, labourers, villages..."
-                className="input-field pl-9 pr-4 py-3 w-full text-sm" />
+                placeholder="Search tractors, harvesters, labourers..."
+                className="input-field pl-9 pr-4 py-3 w-full text-sm min-h-[48px]" />
               
               {filters.search &&
-              <button onClick={() => setFilters((p) => ({ ...p, search: '' }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <button onClick={() => setFilters((p) => ({ ...p, search: '' }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground w-8 h-8 flex items-center justify-center">
                   <X size={14} />
                 </button>
               }
             </div>
             <button onClick={() => setShowFilters((p) => !p)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl border font-semibold text-sm transition-all lg:hidden ${showFilters ? 'bg-primary text-white border-primary' : 'border-border text-foreground hover:border-primary'}`}>
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl border font-semibold text-sm transition-all lg:hidden min-h-[48px] ${showFilters ? 'bg-primary text-white border-primary' : 'border-border text-foreground hover:border-primary'}`}>
               <SlidersHorizontal size={15} />
-              Filters
+              <span className="hidden xs:inline">Filters</span>
               {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full bg-white text-primary text-xs font-bold flex items-center justify-center">{activeFilterCount}</span>}
             </button>
           </div>
 
           {/* Kind tabs */}
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
             {([
             { value: 'all', label: `All (${ITEMS.length})` },
             { value: 'equipment', label: `Equipment (${ITEMS.filter((i) => i.kind === 'equipment').length})` },
             { value: 'labour', label: `Labour (${ITEMS.filter((i) => i.kind === 'labour').length})` }] as
             const).map((tab) =>
             <button key={tab.value} onClick={() => setFilters((p) => ({ ...p, kind: tab.value, category: 'All' }))}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${filters.kind === tab.value ? 'gradient-green text-white border-transparent' : 'border-border text-muted-foreground hover:border-primary hover:text-primary'}`}>
+            className={`px-4 py-2.5 rounded-xl text-sm font-bold border transition-all whitespace-nowrap min-h-[44px] ${filters.kind === tab.value ? 'gradient-green text-white border-transparent' : 'border-border text-muted-foreground hover:border-primary hover:text-primary'}`}>
                 {tab.label}
               </button>
             )}
@@ -386,16 +386,21 @@ export default function DiscoveryPage() {
             <FilterPanel filters={filters} onChange={setFilters} onReset={() => setFilters(DEFAULT_FILTERS)} />
           </aside>
 
-          {/* Mobile filter drawer */}
+          {/* Mobile filter drawer — full screen bottom sheet style */}
           {showFilters &&
           <div className="fixed inset-0 z-50 lg:hidden">
-              <div className="absolute inset-0 bg-black/40" onClick={() => setShowFilters(false)} />
-              <div className="absolute right-0 top-0 bottom-0 w-80 bg-background overflow-y-auto">
-                <div className="flex items-center justify-between p-4 border-b border-border">
-                  <span className="font-bold text-foreground">Filters</span>
-                  <button onClick={() => setShowFilters(false)}><X size={20} /></button>
+              <div className="absolute inset-0 bg-black/50" onClick={() => setShowFilters(false)} />
+              <div className="absolute inset-x-0 bottom-0 top-16 bg-background rounded-t-3xl overflow-y-auto shadow-2xl">
+                <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background z-10">
+                  <span className="font-bold text-foreground text-base">Filters</span>
+                  <button onClick={() => setShowFilters(false)} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"><X size={20} /></button>
                 </div>
                 <FilterPanel filters={filters} onChange={setFilters} onReset={() => {setFilters(DEFAULT_FILTERS);setShowFilters(false);}} />
+                <div className="p-4 border-t border-border sticky bottom-0 bg-background">
+                  <button onClick={() => setShowFilters(false)} className="w-full btn-primary py-3 text-base font-bold min-h-[52px]">
+                    Show {results.length} Results
+                  </button>
+                </div>
               </div>
             </div>
           }
@@ -413,8 +418,8 @@ export default function DiscoveryPage() {
                 </p>
               </div>
               {activeFilterCount > 0 &&
-              <button onClick={() => setFilters(DEFAULT_FILTERS)} className="flex items-center gap-1.5 text-xs text-danger font-semibold hover:underline">
-                  <X size={12} /> Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+              <button onClick={() => setFilters(DEFAULT_FILTERS)} className="flex items-center gap-1.5 text-sm text-danger font-semibold hover:underline min-h-[44px] px-2">
+                  <X size={14} /> Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
                 </button>
               }
             </div>
@@ -426,7 +431,7 @@ export default function DiscoveryPage() {
                 </div>
                 <h3 className="font-bold text-foreground mb-2">No results found</h3>
                 <p className="text-sm text-muted-foreground mb-4">Try adjusting your filters or search term</p>
-                <button onClick={() => setFilters(DEFAULT_FILTERS)} className="btn-primary px-6 py-2.5 text-sm">Clear all filters</button>
+                <button onClick={() => setFilters(DEFAULT_FILTERS)} className="btn-primary px-6 py-3 text-sm min-h-[48px]">Clear all filters</button>
               </div> :
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
