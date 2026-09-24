@@ -154,10 +154,8 @@ export default function DriverAvailabilityPage() {
         toast.success(slotForm.isBlocked ? 'Date blocked' : 'Hours set');
       }
 
-      // Also update equipment_availability for linked equipment (Equipment+Driver slots)
       if (driverEquipment.length > 0 && slotForm.isBlocked) {
         for (const equip of driverEquipment) {
-          // Check if already blocked for this date
           const { data: existing_avail } = await supabase
             .from('equipment_availability')
             .select('id')
@@ -199,7 +197,6 @@ export default function DriverAvailabilityPage() {
         .eq('driver_id', user!.id);
       if (error) throw error;
 
-      // Remove from equipment_availability too
       if (driverEquipment.length > 0) {
         for (const equip of driverEquipment) {
           await supabase
@@ -232,7 +229,6 @@ export default function DriverAvailabilityPage() {
   const canGoPrev = currentYear > new Date().getFullYear() ||
     (currentYear === new Date().getFullYear() && currentMonth > new Date().getMonth());
 
-  // Upcoming blocked dates
   const upcomingBlocked = blockedDates
     .filter(b => b.date >= today && b.is_blocked)
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -251,7 +247,7 @@ export default function DriverAvailabilityPage() {
           <AlertCircle size={48} className="text-warning mx-auto mb-4" />
           <h1 className="text-xl font-bold text-foreground mb-2">Sign in required</h1>
           <p className="text-muted-foreground mb-6">Please sign in to manage your driver availability.</p>
-          <Link href="/sign-up-login-screen" className="btn-primary px-6 py-3">Sign In</Link>
+          <Link href="/sign-up-login-screen" className="btn-primary px-6 py-3 min-h-[52px] inline-flex items-center">Sign In</Link>
         </main>
         <Footer />
       </div>
@@ -265,12 +261,12 @@ export default function DriverAvailabilityPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-2">
-              <Car size={24} className="text-primary" /> Driver Availability
+            <h1 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
+              <Car size={22} className="text-primary" /> Driver Availability
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Block dates or set working hours — syncs to Equipment+Driver booking slots</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Block dates or set working hours</p>
           </div>
-          <button onClick={fetchData} className="p-2.5 rounded-xl border border-border hover:bg-muted transition-colors" title="Refresh">
+          <button onClick={fetchData} className="p-3 rounded-xl border border-border hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" title="Refresh">
             <RefreshCw size={16} />
           </button>
         </div>
@@ -281,7 +277,7 @@ export default function DriverAvailabilityPage() {
             <Info size={16} className="text-primary mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-semibold text-foreground">Synced with {driverEquipment.length} Equipment+Driver listing{driverEquipment.length > 1 ? 's' : ''}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Blocking a date here will also block it in: {driverEquipment.map(e => e.name).join(', ')}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Blocking a date here will also block: {driverEquipment.map(e => e.name).join(', ')}</p>
             </div>
           </div>
         )}
@@ -289,26 +285,27 @@ export default function DriverAvailabilityPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Calendar */}
           <div className="lg:col-span-2">
-            <div className="bg-card rounded-2xl border border-border p-5">
+            <div className="bg-card rounded-2xl border border-border p-4 sm:p-5">
               {/* Month Nav */}
               <div className="flex items-center justify-between mb-5">
                 <button onClick={prevMonth} disabled={!canGoPrev}
-                  className="p-2 rounded-xl hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                  <ChevronLeft size={18} />
+                  className="p-3 rounded-xl hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors min-w-[48px] min-h-[48px] flex items-center justify-center">
+                  <ChevronLeft size={20} />
                 </button>
                 <div className="text-center">
-                  <p className="font-extrabold text-foreground">{MONTH_NAMES[currentMonth]} {currentYear}</p>
+                  <p className="font-extrabold text-foreground text-base sm:text-lg">{MONTH_NAMES[currentMonth]} {currentYear}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{blockedThisMonth} day{blockedThisMonth !== 1 ? 's' : ''} blocked this month</p>
                 </div>
-                <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-muted transition-colors">
-                  <ChevronRight size={18} />
+                <button onClick={nextMonth}
+                  className="p-3 rounded-xl hover:bg-muted transition-colors min-w-[48px] min-h-[48px] flex items-center justify-center">
+                  <ChevronRight size={20} />
                 </button>
               </div>
 
               {/* Day Headers */}
               <div className="grid grid-cols-7 mb-2">
                 {DAY_NAMES.map(d => (
-                  <div key={d} className="text-center text-xs font-bold text-muted-foreground py-1">{d}</div>
+                  <div key={d} className="text-center text-xs font-bold text-muted-foreground py-2">{d}</div>
                 ))}
               </div>
 
@@ -318,7 +315,7 @@ export default function DriverAvailabilityPage() {
                   <Loader2 size={24} className="animate-spin text-primary" />
                 </div>
               ) : (
-                <div className="grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
                   {calendarDays.map((dateStr, idx) => {
                     if (!dateStr) return <div key={`empty-${idx}`} />;
                     const slot = getDateSlot(dateStr);
@@ -328,22 +325,24 @@ export default function DriverAvailabilityPage() {
                     const isBlocked = slot?.is_blocked;
                     const hasHours = slot && !slot.is_blocked;
 
-                    let cls = 'relative flex flex-col items-center justify-center h-11 rounded-xl text-sm font-medium transition-all select-none ';
+                    // Larger cells for touch — min 44px
+                    let cls = 'relative flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all select-none h-11 sm:h-12 ';
                     if (isSelected) cls += 'bg-primary text-white shadow-md z-10 ';
                     else if (isBlocked) cls += 'bg-danger/15 text-danger border border-danger/30 ';
                     else if (hasHours) cls += 'bg-success/15 text-success border border-success/30 ';
                     else if (isPast) cls += 'text-muted-foreground/40 cursor-not-allowed ';
                     else if (isToday) cls += 'border-2 border-primary text-primary font-bold cursor-pointer hover:bg-primary/10 ';
-                    else cls += 'text-foreground cursor-pointer hover:bg-primary/10 hover:text-primary ';
+                    else cls += 'text-foreground cursor-pointer hover:bg-primary/10 hover:text-primary active:bg-primary/20 ';
 
                     const day = parseInt(dateStr.split('-')[2]);
 
                     return (
                       <button key={dateStr} onClick={() => !isPast && handleDayClick(dateStr)}
-                        disabled={isPast} className={cls} title={slot ? `${isBlocked ? 'Blocked' : `${slot.start_hour}:00–${slot.end_hour}:00`}${slot.note ? ` · ${slot.note}` : ''}` : undefined}>
-                        <span>{day}</span>
-                        {isBlocked && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-danger" />}
-                        {hasHours && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-success" />}
+                        disabled={isPast} className={cls}
+                        title={slot ? `${isBlocked ? 'Blocked' : `${slot.start_hour}:00–${slot.end_hour}:00`}${slot.note ? ` · ${slot.note}` : ''}` : undefined}>
+                        <span className="text-sm">{day}</span>
+                        {isBlocked && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-danger" />}
+                        {hasHours && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-success" />}
                       </button>
                     );
                   })}
@@ -351,29 +350,29 @@ export default function DriverAvailabilityPage() {
               )}
 
               {/* Legend */}
-              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border flex-wrap">
+              <div className="flex items-center gap-3 sm:gap-4 mt-4 pt-4 border-t border-border flex-wrap">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <div className="w-3 h-3 rounded-full bg-danger/40 border border-danger/50" />
-                  Blocked / Unavailable
+                  <div className="w-3 h-3 rounded-full bg-danger/40 border border-danger/50 shrink-0" />
+                  Blocked
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <div className="w-3 h-3 rounded-full bg-success/40 border border-success/50" />
-                  Custom Hours Set
+                  <div className="w-3 h-3 rounded-full bg-success/40 border border-success/50 shrink-0" />
+                  Custom Hours
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <div className="w-3 h-3 rounded-full bg-primary" />
+                  <div className="w-3 h-3 rounded-full bg-primary shrink-0" />
                   Selected
                 </div>
-                <p className="text-xs text-muted-foreground ml-auto">Click any future date to set availability</p>
+                <p className="text-xs text-muted-foreground sm:ml-auto w-full sm:w-auto">Tap any future date to set availability</p>
               </div>
             </div>
           </div>
 
           {/* Right Panel */}
           <div className="space-y-4">
-            {/* Slot Form */}
+            {/* Slot Form — shown below calendar on mobile when a date is selected */}
             {showSlotForm && selectedDate && (
-              <div className="bg-card rounded-2xl border border-border p-5">
+              <div className="bg-card rounded-2xl border border-border p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-foreground text-sm">
                     {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}
@@ -381,38 +380,38 @@ export default function DriverAvailabilityPage() {
                   {getDateSlot(selectedDate) && (
                     <button onClick={() => { const s = getDateSlot(selectedDate); if (s) removeSlot(s.id, selectedDate); }}
                       disabled={!!deletingId}
-                      className="p-1.5 rounded-lg hover:bg-danger/10 text-danger transition-colors disabled:opacity-50">
-                      {deletingId ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      className="p-2.5 rounded-xl hover:bg-danger/10 text-danger transition-colors disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                      {deletingId ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                     </button>
                   )}
                 </div>
 
-                {/* Block toggle */}
+                {/* Block / Hours toggle */}
                 <div className="flex gap-2 mb-4">
                   <button onClick={() => setSlotForm(p => ({ ...p, isBlocked: true }))}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-bold transition-all ${slotForm.isBlocked ? 'border-danger bg-danger/5 text-danger' : 'border-border text-muted-foreground hover:border-danger/50'}`}>
-                    <XCircle size={14} /> Block Day
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-bold transition-all min-h-[52px] ${slotForm.isBlocked ? 'border-danger bg-danger/5 text-danger' : 'border-border text-muted-foreground hover:border-danger/50'}`}>
+                    <XCircle size={16} /> Block Day
                   </button>
                   <button onClick={() => setSlotForm(p => ({ ...p, isBlocked: false }))}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-bold transition-all ${!slotForm.isBlocked ? 'border-success bg-success/5 text-success' : 'border-border text-muted-foreground hover:border-success/50'}`}>
-                    <Clock size={14} /> Set Hours
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-bold transition-all min-h-[52px] ${!slotForm.isBlocked ? 'border-success bg-success/5 text-success' : 'border-border text-muted-foreground hover:border-success/50'}`}>
+                    <Clock size={16} /> Set Hours
                   </button>
                 </div>
 
-                {/* Hours (only when not fully blocked) */}
+                {/* Hours selectors */}
                 {!slotForm.isBlocked && (
                   <div className="space-y-3 mb-4">
                     <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1.5">Start Time</label>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">Start Time</label>
                       <select value={slotForm.startHour} onChange={e => setSlotForm(p => ({ ...p, startHour: parseInt(e.target.value) }))}
-                        className="input-field w-full text-sm">
+                        className="input-field w-full text-sm min-h-[48px]">
                         {HOUR_OPTIONS.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1.5">End Time</label>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">End Time</label>
                       <select value={slotForm.endHour} onChange={e => setSlotForm(p => ({ ...p, endHour: parseInt(e.target.value) }))}
-                        className="input-field w-full text-sm">
+                        className="input-field w-full text-sm min-h-[48px]">
                         {HOUR_OPTIONS.filter(h => h.value > slotForm.startHour).map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
                       </select>
                     </div>
@@ -421,19 +420,19 @@ export default function DriverAvailabilityPage() {
 
                 {/* Note */}
                 <div className="mb-4">
-                  <label className="block text-xs font-semibold text-foreground mb-1.5">Note (optional)</label>
+                  <label className="block text-sm font-semibold text-foreground mb-1.5">Note (optional)</label>
                   <input value={slotForm.note} onChange={e => setSlotForm(p => ({ ...p, note: e.target.value }))}
-                    placeholder="e.g. Personal work, Festival, etc." className="input-field w-full text-sm" />
+                    placeholder="e.g. Personal work, Festival, etc." className="input-field w-full text-sm min-h-[48px]" />
                 </div>
 
                 <div className="flex gap-2">
                   <button onClick={() => { setShowSlotForm(false); setSelectedDate(null); }}
-                    className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition-colors">
+                    className="flex-1 py-3 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition-colors min-h-[52px]">
                     Cancel
                   </button>
                   <button onClick={saveSlot} disabled={saving}
-                    className="flex-1 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-1.5">
-                    {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                    className="flex-1 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-1.5 min-h-[52px]">
+                    {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
                     Save
                   </button>
                 </div>
@@ -441,7 +440,7 @@ export default function DriverAvailabilityPage() {
             )}
 
             {/* Upcoming Blocked Dates */}
-            <div className="bg-card rounded-2xl border border-border p-5">
+            <div className="bg-card rounded-2xl border border-border p-4 sm:p-5">
               <h3 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
                 <Calendar size={15} className="text-primary" /> Upcoming Blocked Dates
               </h3>
@@ -454,20 +453,20 @@ export default function DriverAvailabilityPage() {
                   <p className="text-xs text-muted-foreground mt-1">No upcoming blocked dates</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {upcomingBlocked.map(b => (
-                    <div key={b.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                      <div>
+                    <div key={b.id} className="flex items-center justify-between py-3 border-b border-border last:border-0 gap-2">
+                      <div className="min-w-0">
                         <p className="text-sm font-semibold text-foreground">
                           {new Date(b.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
                         </p>
-                        {b.note && <p className="text-xs text-muted-foreground">{b.note}</p>}
+                        {b.note && <p className="text-xs text-muted-foreground truncate">{b.note}</p>}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-danger bg-danger/10 px-2 py-0.5 rounded-full">Blocked</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs font-bold text-danger bg-danger/10 px-2 py-1 rounded-full">Blocked</span>
                         <button onClick={() => removeSlot(b.id, b.date)} disabled={deletingId === b.id}
-                          className="p-1 rounded-lg hover:bg-danger/10 text-muted-foreground hover:text-danger transition-colors disabled:opacity-50">
-                          {deletingId === b.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                          className="p-2 rounded-xl hover:bg-danger/10 text-muted-foreground hover:text-danger transition-colors disabled:opacity-50 min-w-[40px] min-h-[40px] flex items-center justify-center">
+                          {deletingId === b.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                         </button>
                       </div>
                     </div>
@@ -477,15 +476,15 @@ export default function DriverAvailabilityPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-card rounded-2xl border border-border p-5">
+            <div className="bg-card rounded-2xl border border-border p-4 sm:p-5">
               <h3 className="font-bold text-foreground text-sm mb-3">This Month</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-danger/5 rounded-xl p-3 text-center">
-                  <p className="text-xl font-extrabold text-danger">{blockedThisMonth}</p>
+                  <p className="text-2xl font-extrabold text-danger">{blockedThisMonth}</p>
                   <p className="text-xs text-muted-foreground">Days Blocked</p>
                 </div>
                 <div className="bg-success/5 rounded-xl p-3 text-center">
-                  <p className="text-xl font-extrabold text-success">{daysInMonth - blockedThisMonth}</p>
+                  <p className="text-2xl font-extrabold text-success">{daysInMonth - blockedThisMonth}</p>
                   <p className="text-xs text-muted-foreground">Days Available</p>
                 </div>
               </div>

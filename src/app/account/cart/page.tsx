@@ -44,8 +44,8 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="max-w-lg mx-auto px-4 py-16 text-center">
-          <div className="card-base p-10">
+        <main className="max-w-lg mx-auto px-4 py-12 sm:py-16 text-center">
+          <div className="card-base p-8 sm:p-10">
             <div className="w-20 h-20 rounded-full bg-success-bg flex items-center justify-center mx-auto mb-5"><CheckCircle size={40} className="text-success" /></div>
             <h2 className="text-2xl font-extrabold text-foreground mb-2">Order Placed!</h2>
             <p className="text-muted-foreground mb-1">Your payment was successful.</p>
@@ -55,8 +55,8 @@ export default function CartPage() {
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Estimated Delivery</span><span className="font-semibold text-foreground">3–5 Business Days</span></div>
             </div>
             <div className="flex flex-col gap-3">
-              <Link href="/account/bookings" className="btn-primary w-full justify-center">View My Orders</Link>
-              <Link href="/agri" className="btn-secondary w-full justify-center">Continue Shopping</Link>
+              <Link href="/account/bookings" className="btn-primary w-full justify-center min-h-[52px] flex items-center">View My Orders</Link>
+              <Link href="/agri" className="btn-secondary w-full justify-center min-h-[52px] flex items-center">Continue Shopping</Link>
             </div>
           </div>
         </main>
@@ -68,49 +68,56 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="max-w-screen-2xl mx-auto px-4 lg:px-8 xl:px-10 2xl:px-16 py-8">
+      <main className="max-w-screen-2xl mx-auto px-4 lg:px-8 xl:px-10 2xl:px-16 py-6 sm:py-8 pb-32 lg:pb-8">
         <div className="flex items-center gap-3 mb-6">
           <ShoppingCart size={22} className="text-primary" />
-          <h1 className="text-2xl font-extrabold text-foreground">My Cart</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-foreground">My Cart</h1>
           {items.length > 0 && <span className="badge-green">{items.length} items</span>}
         </div>
 
         {items.length === 0 ? (
-          <div className="card-base p-16 text-center max-w-lg mx-auto">
+          <div className="card-base p-10 sm:p-16 text-center max-w-lg mx-auto">
             <ShoppingCart size={48} className="text-muted-foreground mx-auto mb-4" />
             <h3 className="font-bold text-xl text-foreground mb-2">Your cart is empty</h3>
             <p className="text-muted-foreground text-sm mb-6">Add seeds, fertilizers, pesticides and more from our Agri Supplies store.</p>
-            <Link href="/agri" className="btn-primary inline-flex">Browse Agri Supplies <ArrowRight size={16} /></Link>
+            <Link href="/agri" className="btn-primary inline-flex min-h-[52px] items-center gap-2">Browse Agri Supplies <ArrowRight size={16} /></Link>
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-6">
+            {/* Cart items */}
             <div className="flex-1 min-w-0 space-y-3">
               {items.map((item) => {
                 const itemTotal = item.price * item.quantity;
                 const itemMrp = item.mrp * item.quantity;
                 const itemDiscount = Math.round((item.mrp - item.price) / item.mrp * 100);
                 return (
-                  <div key={item.id} className="card-base p-4">
-                    <div className="flex gap-4">
-                      <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0"><AppImage src={item.image} alt={item.imageAlt} fill className="object-cover" /></div>
+                  <div key={item.id} className="card-base p-3 sm:p-4">
+                    <div className="flex gap-3 sm:gap-4">
+                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0">
+                        <AppImage src={item.image} alt={item.imageAlt} fill className="object-cover" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <div>
+                          <div className="min-w-0">
                             <span className="badge-green text-xs mb-1 inline-block">{item.category}</span>
                             <h3 className="font-bold text-sm text-foreground line-clamp-2">{item.name}</h3>
                             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><Package size={11} className="text-primary" />{item.seller}</p>
                           </div>
-                          <button suppressHydrationWarning onClick={() => removeItem(item.id)} className="p-1.5 rounded-lg hover:bg-danger-bg text-muted-foreground hover:text-danger transition-colors shrink-0"><Trash2 size={15} /></button>
+                          <button suppressHydrationWarning onClick={() => removeItem(item.id)} className="p-2.5 rounded-xl hover:bg-danger-bg text-muted-foreground hover:text-danger transition-colors shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"><Trash2 size={16} /></button>
                         </div>
                         <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                          <div className="flex items-center gap-2">
-                            <button suppressHydrationWarning onClick={() => updateQty(item.id, -1)} disabled={item.quantity <= 1} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"><Minus size={13} /></button>
-                            <span className="w-8 text-center font-bold text-sm font-tabular">{item.quantity}</span>
-                            <button suppressHydrationWarning onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:bg-muted transition-colors"><Plus size={13} /></button>
-                            <span className="text-xs text-muted-foreground">{item.unit}</span>
+                          {/* Quantity controls — larger touch targets */}
+                          <div className="flex items-center gap-1">
+                            <button suppressHydrationWarning onClick={() => updateQty(item.id, -1)} disabled={item.quantity <= 1} className="w-10 h-10 rounded-xl border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"><Minus size={14} /></button>
+                            <span className="w-10 text-center font-bold text-sm font-tabular">{item.quantity}</span>
+                            <button suppressHydrationWarning onClick={() => updateQty(item.id, 1)} className="w-10 h-10 rounded-xl border border-border flex items-center justify-center hover:bg-muted transition-colors"><Plus size={14} /></button>
+                            <span className="text-xs text-muted-foreground ml-1">{item.unit}</span>
                           </div>
                           <div className="text-right">
-                            <div className="flex items-baseline gap-1.5"><p className="font-bold text-base text-primary font-tabular">₹{itemTotal.toLocaleString('en-IN')}</p>{itemMrp > itemTotal && <p className="text-xs text-muted-foreground line-through font-tabular">₹{itemMrp.toLocaleString('en-IN')}</p>}</div>
+                            <div className="flex items-baseline gap-1.5">
+                              <p className="font-bold text-base text-primary font-tabular">₹{itemTotal.toLocaleString('en-IN')}</p>
+                              {itemMrp > itemTotal && <p className="text-xs text-muted-foreground line-through font-tabular">₹{itemMrp.toLocaleString('en-IN')}</p>}
+                            </div>
                             {itemDiscount > 0 && <p className="text-xs text-success font-medium">{itemDiscount}% off</p>}
                           </div>
                         </div>
@@ -120,32 +127,36 @@ export default function CartPage() {
                 );
               })}
 
+              {/* Coupon */}
               <div className="card-base p-4">
                 <div className="flex items-center gap-2 mb-3"><Tag size={16} className="text-primary" /><h3 className="font-semibold text-sm text-foreground">Apply Coupon</h3></div>
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between bg-success-bg border border-success/30 rounded-xl px-4 py-3">
-                    <div className="flex items-center gap-2"><CheckCircle size={16} className="text-success" /><span className="font-bold text-sm text-success">{appliedCoupon}</span><span className="text-xs text-success">— {appliedCoupon === 'KISAN10' ? '10%' : '20%'} discount applied!</span></div>
-                    <button suppressHydrationWarning onClick={() => { setAppliedCoupon(''); setCoupon(''); }} className="text-xs text-danger font-medium hover:underline">Remove</button>
+                    <div className="flex items-center gap-2"><CheckCircle size={16} className="text-success" /><span className="font-bold text-sm text-success">{appliedCoupon}</span><span className="text-xs text-success">— {appliedCoupon === 'KISAN10' ? '10%' : '20%'} off!</span></div>
+                    <button suppressHydrationWarning onClick={() => { setAppliedCoupon(''); setCoupon(''); }} className="text-sm text-danger font-medium hover:underline min-h-[44px] px-2">Remove</button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <input type="text" placeholder="Enter coupon code (try KISAN10)" value={coupon} onChange={(e) => { setCoupon(e.target.value.toUpperCase()); setCouponError(''); }} className="input-field flex-1 uppercase" />
-                    <button suppressHydrationWarning onClick={applyCoupon} disabled={!coupon} className="btn-secondary px-5 shrink-0 disabled:opacity-50">Apply</button>
+                    <input type="text" placeholder="Enter coupon code (try KISAN10)" value={coupon} onChange={(e) => { setCoupon(e.target.value.toUpperCase()); setCouponError(''); }} className="input-field flex-1 uppercase min-h-[48px]" />
+                    <button suppressHydrationWarning onClick={applyCoupon} disabled={!coupon} className="btn-secondary px-5 shrink-0 disabled:opacity-50 min-h-[48px]">Apply</button>
                   </div>
                 )}
                 {couponError && <p className="text-xs text-danger mt-2">{couponError}</p>}
               </div>
 
+              {/* Delivery notice */}
               <div className="card-base p-4 bg-secondary/40">
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Truck size={16} className="text-primary" />
+                  <Truck size={16} className="text-primary shrink-0" />
                   {deliveryFee === 0 ? <span><span className="font-semibold text-success">Free delivery</span> on this order!</span> : <span>Add <span className="font-semibold text-primary">₹{(2000 - subtotal).toLocaleString('en-IN')}</span> more for free delivery</span>}
                 </div>
               </div>
             </div>
 
+            {/* Order summary — sticky sidebar on desktop, fixed bottom bar on mobile */}
             <div className="lg:w-80 xl:w-96 shrink-0">
-              <div className="card-base p-5 sticky top-20">
+              {/* Desktop sticky card */}
+              <div className="hidden lg:block card-base p-5 sticky top-20">
                 <h3 className="font-bold text-base text-foreground mb-4">Order Summary</h3>
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal ({items.reduce((s, i) => s + i.quantity, 0)} items)</span><span className="font-semibold font-tabular">₹{subtotal.toLocaleString('en-IN')}</span></div>
@@ -156,6 +167,19 @@ export default function CartPage() {
                 </div>
                 <RazorpayCheckout amount={total} description="KisanSetu Agri Supplies Order" buttonText={`Pay ₹${total.toLocaleString('en-IN')}`} onSuccess={(result) => { setPaymentResult(result); setPaymentDone(true); setItems([]); }} onError={(err) => console.error(err)} />
                 <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground"><ShieldCheck size={13} className="text-success" />100% secure payments via Razorpay</div>
+              </div>
+
+              {/* Mobile fixed bottom checkout bar */}
+              <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-40 shadow-2xl">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total ({items.reduce((s, i) => s + i.quantity, 0)} items)</p>
+                    <p className="font-bold text-xl text-primary font-tabular">₹{total.toLocaleString('en-IN')}</p>
+                    {savings > 0 && <p className="text-xs text-success">You save ₹{savings.toLocaleString('en-IN')}</p>}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck size={12} className="text-success" />Secure</div>
+                </div>
+                <RazorpayCheckout amount={total} description="KisanSetu Agri Supplies Order" buttonText={`Pay ₹${total.toLocaleString('en-IN')}`} onSuccess={(result) => { setPaymentResult(result); setPaymentDone(true); setItems([]); }} onError={(err) => console.error(err)} />
               </div>
             </div>
           </div>
