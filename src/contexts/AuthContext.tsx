@@ -17,13 +17,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const supabase = createClient();
+
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      if (!error && data) {
+        setUserProfile(data);
+        setUserRole(data.role || 'buyer');
+      }
+    } catch {
+      // silently fail — profile may not exist yet
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+        loadUserProfile(session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
     });
 
     const {
@@ -31,7 +53,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+        loadUserProfile(session.user.id).finally(() => setLoading(false));
+      } else {
+        setUserRole(null);
+        setUserProfile(null);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -39,6 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Email/Password Sign Up
   const signUp = async (email: string, password: string, metadata: Record<string, string> = {}) => {
+    const role = metadata?.role || 'buyer';
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -47,12 +76,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           full_name: metadata?.fullName || '',
           avatar_url: metadata?.avatarUrl || '',
           phone: metadata?.phone || '',
-          role: metadata?.role || 'buyer',
+          role,
         },
         emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`
       }
     });
     if (error) throw error;
+    // Upsert user_profiles with the chosen role
+    if (data.user) {
+      await supabase.from('user_profiles').upsert({
+        id: data.user.id,
+        email,
+        full_name: metadata?.fullName || '',
+        role,
+      }, { onConflict: 'id' });
+      await loadUserProfile(data.user.id);
+    }
     return data;
   };
 
@@ -63,6 +102,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       password
     });
     if (error) throw error;
+    if (data.user) {
+      await loadUserProfile(data.user.id);
+    }
     return data;
   };
 
@@ -80,7 +122,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Phone OTP — Step 2: Verify OTP, then sign in/up via Supabase anonymous + link
   const verifyPhoneOtp = async (phone: string, otp: string, fullName?: string) => {
-    // First verify OTP with our Twilio-backed API
     const res = await fetch('/api/otp/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -89,23 +130,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const verifyData = await res.json();
     if (!res.ok) throw new Error(verifyData.error || 'Invalid OTP');
 
-    // OTP verified — now sign in with Supabase using phone+OTP (Supabase phone auth)
-    // We use a deterministic email derived from phone for Supabase Auth
     const normalizedPhone = phone.replace(/\D/g, '');
     const phoneEmail = `${normalizedPhone}@kisansetu.phone`;
     const phonePassword = `KS_${normalizedPhone}_2026!`;
 
-    // Try sign in first
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: phoneEmail,
       password: phonePassword,
     });
 
     if (!signInError && signInData.user) {
+      await loadUserProfile(signInData.user.id);
       return signInData;
     }
 
-    // User doesn't exist — create account
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: phoneEmail,
       password: phonePassword,
@@ -120,16 +158,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (signUpError) throw signUpError;
 
-    // If email confirmation required, sign in immediately
     if (!signUpData.session) {
       const { data: retrySignIn, error: retryError } = await supabase.auth.signInWithPassword({
         email: phoneEmail,
         password: phonePassword,
       });
       if (retryError) throw retryError;
+      if (retrySignIn.user) await loadUserProfile(retrySignIn.user.id);
       return retrySignIn;
     }
 
+    if (signUpData.user) await loadUserProfile(signUpData.user.id);
     return signUpData;
   };
 
@@ -137,6 +176,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    setUserRole(null);
+    setUserProfile(null);
   };
 
   // Get Current User
@@ -173,6 +214,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .select()
       .single();
     if (error) throw error;
+    setUserProfile(data);
+    if (updates.role) setUserRole(updates.role as string);
     return data;
   };
 
@@ -185,18 +228,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         is_provider: true,
         provider_type: providerType,
         business_name: businessName || '',
+        role: 'supplier',
       })
       .eq('id', user.id)
       .select()
       .single();
     if (error) throw error;
+    setUserProfile(data);
+    setUserRole('supplier');
     return data;
+  };
+
+  // Helper: check if user is a supplier/provider
+  const isSupplier = () => {
+    return userRole === 'supplier' || userRole === 'provider' || userProfile?.is_provider === true;
+  };
+
+  // Helper: check if user is a farmer/buyer
+  const isFarmer = () => {
+    return userRole === 'farmer' || userRole === 'buyer';
   };
 
   const value = {
     user,
     session,
     loading,
+    userRole,
+    userProfile,
+    isSupplier,
+    isFarmer,
     signUp,
     signIn,
     sendPhoneOtp,

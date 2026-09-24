@@ -8,15 +8,12 @@ import { Mail, Lock, Eye, EyeOff, Loader2, Tractor, Wrench } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-type Role = 'farmer' | 'provider';
-
 export default function LoginPage() {
   const { signIn } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<Role>('farmer');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -28,9 +25,12 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      await signIn(email, password);
-      toast.success(`Welcome back! Signed in as ${role === 'farmer' ? 'Farmer' : 'Provider'} 🌾`);
-      setTimeout(() => router.push('/inbox'), 600);
+      const data = await signIn(email, password);
+      // Determine role from user metadata or user_profiles (loaded by signIn)
+      const role = data?.user?.user_metadata?.role || 'buyer';
+      toast.success(`Welcome back! 🌾`);
+      const isSupplierRole = role === 'supplier' || role === 'provider';
+      setTimeout(() => router.push(isSupplierRole ? '/supplier/hub' : '/unified-inbox'), 600);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Invalid email or password';
       toast.error(msg);
@@ -58,35 +58,19 @@ export default function LoginPage() {
 
         <div className="bg-card border border-border rounded-2xl shadow-sm p-7">
 
-          {/* Role selector */}
-          <div className="mb-6">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">
-              I am a
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole('farmer')}
-                className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${
-                  role === 'farmer' ?'border-primary bg-primary/5 text-primary' :'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
-                }`}
-              >
-                <Tractor size={22} />
-                <span className="text-sm font-semibold">Farmer</span>
-                <span className="text-[11px] text-center leading-tight opacity-70">Rent equipment &amp; hire labour</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('provider')}
-                className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${
-                  role === 'provider' ?'border-primary bg-primary/5 text-primary' :'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
-                }`}
-              >
-                <Wrench size={22} />
-                <span className="text-sm font-semibold">Provider</span>
-                <span className="text-[11px] text-center leading-tight opacity-70">List &amp; manage your equipment</span>
-              </button>
+          {/* Role info */}
+          <div className="mb-5 flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border">
+            <div className="flex gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-background border border-border rounded-lg px-2.5 py-1.5">
+                <Tractor size={13} /> Farmer
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-background border border-border rounded-lg px-2.5 py-1.5">
+                <Wrench size={13} /> Supplier
+              </span>
             </div>
+            <p className="text-xs text-muted-foreground leading-tight">
+              Sign in — you&apos;ll be directed to your dashboard automatically
+            </p>
           </div>
 
           {/* Login form */}
@@ -152,7 +136,7 @@ export default function LoginPage() {
               {loading ? (
                 <><Loader2 size={16} className="animate-spin" /> Signing in...</>
               ) : (
-                `Sign in as ${role === 'farmer' ? 'Farmer' : 'Provider'}`
+                'Sign In'
               )}
             </button>
           </form>
