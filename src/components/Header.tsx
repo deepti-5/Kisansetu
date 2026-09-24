@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
-import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check } from 'lucide-react';
+import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check, MessageCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 
@@ -36,6 +36,7 @@ export default function Header() {
   const ACCOUNT_MENU = [
     { icon: User, label: t('yourInfo'), href: '/account/profile' },
     { icon: ShoppingBag, label: t('bookings'), href: '/account/bookings' },
+    { icon: MessageCircle, label: 'Messages', href: '/messages' },
     { icon: CreditCard, label: t('payments'), href: '/account/payments' },
     { icon: Heart, label: t('wishlist'), href: '/account/wishlist' },
     { icon: Bell, label: t('notifications'), href: '/account/notifications' },
@@ -187,6 +188,14 @@ export default function Header() {
                     {notifCount}
                   </span>
                 )}
+              </Link>
+
+              <Link
+                href="/messages"
+                className="relative p-2 rounded-lg hover:bg-secondary transition-colors duration-150"
+                title="Messages"
+              >
+                <MessageCircle size={20} className="text-foreground" />
               </Link>
 
               <Link

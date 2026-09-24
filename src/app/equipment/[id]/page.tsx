@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { Star, MapPin, Shield, ChevronLeft, ChevronRight, Heart, Share2, Phone, CheckCircle, Truck, Wrench, ShoppingCart, Tag } from 'lucide-react';
+import { Star, MapPin, Shield, ChevronLeft, ChevronRight, Heart, Share2, Phone, CheckCircle, Truck, Wrench, ShoppingCart, Tag, MessageCircle } from 'lucide-react';
 import { ALL_EQUIPMENT } from '@/app/equipment-listing-page/components/EquipmentListingContent';
 import RazorpayCheckout, { PaymentResult } from '@/components/RazorpayCheckout';
 import { toast } from 'sonner';
 import AvailabilityCalendar from './components/AvailabilityCalendar';
 import { createClient } from '@/lib/supabase/client';
+import MessagingModal from '@/components/MessagingModal';
 
 const EXTRA_IMAGES = [
   'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800',
@@ -34,6 +35,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
   const [bookingId, setBookingId] = useState('');
   const [paidId, setPaidId] = useState('');
   const [bookingError, setBookingError] = useState('');
+  const [messagingOpen, setMessagingOpen] = useState(false);
 
   const days = startDate && endDate ? Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000) + 1) : 1;
   const rentalAmt = days * equipment.rentPerDay;
@@ -171,6 +173,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                 <button disabled={!equipment.available} onClick={handleOpenRentModal} className={`py-3 rounded-xl font-bold text-sm transition-all ${equipment.available ? 'btn-primary' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>Rent Now</button>
                 <button disabled={!equipment.available} onClick={() => setModal('buy')} className={`py-3 rounded-xl font-bold text-sm transition-all ${equipment.available ? 'btn-accent' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>Buy Now</button>
               </div>
+              <button onClick={() => setMessagingOpen(true)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/10 border-2 border-primary/30 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors mb-2"><MessageCircle size={16} />Message {equipment.owner}</button>
               <a href={`tel:${equipment.ownerPhone}`} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-border text-sm font-semibold hover:bg-muted transition-colors"><Phone size={16} />Call {equipment.owner}</a>
               <div className="mt-4 space-y-2">
                 {[{ icon: Shield, text: 'Verified supplier' }, { icon: Truck, text: 'Delivery available' }, { icon: CheckCircle, text: 'Deposit refundable' }].map(item => (
@@ -270,6 +273,18 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
         </div>
       )}
       <Footer />
+
+      {/* Messaging Modal */}
+      <MessagingModal
+        isOpen={messagingOpen}
+        onClose={() => setMessagingOpen(false)}
+        listingType="equipment"
+        listingId={resolvedParams.id}
+        listingName={equipment.name}
+        listingImage={equipment.image}
+        providerId={equipment.providerId || 'demo-provider'}
+        providerName={equipment.owner}
+      />
     </div>
   );
 }
