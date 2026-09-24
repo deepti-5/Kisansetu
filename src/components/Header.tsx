@@ -19,6 +19,7 @@ export default function Header() {
   const [langOpen, setLangOpen] = useState(false);
   const [notifCount] = useState(3);
   const [mounted, setMounted] = useState(false);
+  const [unreadCount] = useState(0);
   const [location, setLocation] = useState<string>('Detecting...');
   const [locationLoading, setLocationLoading] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null);
@@ -41,6 +42,7 @@ export default function Header() {
 
   const ACCOUNT_MENU = [
     { icon: User, label: t('yourInfo'), href: '/account/profile' },
+    { icon: Inbox, label: 'Unified Inbox', href: '/unified-inbox' },
     { icon: ShoppingBag, label: t('bookings'), href: '/account/bookings' },
     { icon: Tractor, label: 'My Rentals', href: '/farmer/rentals' },
     { icon: CreditCard, label: 'Pay for Rental', href: '/rental-payment' },
@@ -214,6 +216,19 @@ export default function Header() {
                 {notifCount > 0 && (
                   <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center leading-none">
                     {notifCount}
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                href="/unified-inbox"
+                className="relative p-2 rounded-lg hover:bg-secondary transition-colors duration-150"
+                title="Unified Inbox"
+              >
+                <Inbox size={20} className="text-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                    {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </Link>
