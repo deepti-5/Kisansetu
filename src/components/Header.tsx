@@ -3,75 +3,47 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
-import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2 } from 'lucide-react';
-
-// Language translations for Header UI
-const HEADER_TRANSLATIONS: Record<string, {
-  home: string; equipment: string; labour: string; agri: string; howItWorks: string; help: string;
-  accounts: string; yourInfo: string; bookings: string; payments: string; wishlist: string;
-  notifications: string; changeLanguage: string; supplierDashboard: string; helpSupport: string;
-  policies: string; logout: string; navigation: string; account: string; smartFarming: string;
-}> = {
-  en: { home: 'Home', equipment: 'Equipment', labour: 'Labour', agri: 'Agri', howItWorks: 'How It Works', help: 'Help', accounts: 'Accounts', yourInfo: 'Your Information', bookings: 'My Bookings / Orders', payments: 'Payment & Refund History', wishlist: 'Wishlist', notifications: 'Notifications', changeLanguage: 'Change Language', supplierDashboard: 'Supplier Dashboard', helpSupport: 'Help & Support', policies: 'Policies', logout: 'Logout', navigation: 'Navigation', account: 'Account', smartFarming: 'Smart Farming Platform' },
-  hi: { home: 'होम', equipment: 'उपकरण', labour: 'मजदूर', agri: 'कृषि', howItWorks: 'कैसे काम करता है', help: 'सहायता', accounts: 'खाता', yourInfo: 'आपकी जानकारी', bookings: 'मेरी बुकिंग / ऑर्डर', payments: 'भुगतान इतिहास', wishlist: 'विशलिस्ट', notifications: 'सूचनाएं', changeLanguage: 'भाषा बदलें', supplierDashboard: 'आपूर्तिकर्ता डैशबोर्ड', helpSupport: 'सहायता', policies: 'नीतियां', logout: 'लॉग आउट', navigation: 'नेविगेशन', account: 'खाता', smartFarming: 'स्मार्ट खेती प्लेटफॉर्म' },
-  mr: { home: 'मुख्यपृष्ठ', equipment: 'उपकरणे', labour: 'मजूर', agri: 'शेती', howItWorks: 'कसे कार्य करते', help: 'मदत', accounts: 'खाते', yourInfo: 'तुमची माहिती', bookings: 'माझ्या बुकिंग', payments: 'पेमेंट इतिहास', wishlist: 'विशलिस्ट', notifications: 'सूचना', changeLanguage: 'भाषा बदला', supplierDashboard: 'पुरवठादार डॅशबोर्ड', helpSupport: 'मदत', policies: 'धोरणे', logout: 'लॉग आउट', navigation: 'नेव्हिगेशन', account: 'खाते', smartFarming: 'स्मार्ट शेती प्लॅटफॉर्म' },
-  kn: { home: 'ಮನೆ', equipment: 'ಉಪಕರಣ', labour: 'ಕಾರ್ಮಿಕ', agri: 'ಕೃಷಿ', howItWorks: 'ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ', help: 'ಸಹಾಯ', accounts: 'ಖಾತೆ', yourInfo: 'ನಿಮ್ಮ ಮಾಹಿತಿ', bookings: 'ನನ್ನ ಬುಕಿಂಗ್', payments: 'ಪಾವತಿ ಇತಿಹಾಸ', wishlist: 'ವಿಶ್‌ಲಿಸ್ಟ್', notifications: 'ಅಧಿಸೂಚನೆಗಳು', changeLanguage: 'ಭಾಷೆ ಬದಲಿಸಿ', supplierDashboard: 'ಸರಬರಾಜುದಾರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', helpSupport: 'ಸಹಾಯ', policies: 'ನೀತಿಗಳು', logout: 'ಲಾಗ್ ಔಟ್', navigation: 'ನ್ಯಾವಿಗೇಶನ್', account: 'ಖಾತೆ', smartFarming: 'ಸ್ಮಾರ್ಟ್ ಕೃಷಿ ವೇದಿಕೆ' },
-  te: { home: 'హోమ్', equipment: 'పరికరాలు', labour: 'కూలీ', agri: 'వ్యవసాయం', howItWorks: 'ఎలా పని చేస్తుంది', help: 'సహాయం', accounts: 'ఖాతా', yourInfo: 'మీ సమాచారం', bookings: 'నా బుకింగ్‌లు', payments: 'చెల్లింపు చరిత్ర', wishlist: 'విష్‌లిస్ట్', notifications: 'నోటిఫికేషన్లు', changeLanguage: 'భాష మార్చు', supplierDashboard: 'సప్లయర్ డాష్‌బోర్డ్', helpSupport: 'సహాయం', policies: 'విధానాలు', logout: 'లాగ్ అవుట్', navigation: 'నావిగేషన్', account: 'ఖాతా', smartFarming: 'స్మార్ట్ వ్యవసాయ వేదిక' },
-  ta: { home: 'முகப்பு', equipment: 'உபகரணங்கள்', labour: 'தொழிலாளர்', agri: 'விவசாயம்', howItWorks: 'எப்படி செயல்படுகிறது', help: 'உதவி', accounts: 'கணக்கு', yourInfo: 'உங்கள் தகவல்', bookings: 'என் முன்பதிவுகள்', payments: 'கட்டண வரலாறு', wishlist: 'விஷ்லிஸ்ட்', notifications: 'அறிவிப்புகள்', changeLanguage: 'மொழி மாற்று', supplierDashboard: 'சப்ளையர் டாஷ்போர்டு', helpSupport: 'உதவி', policies: 'கொள்கைகள்', logout: 'வெளியேறு', navigation: 'வழிசெலுத்தல்', account: 'கணக்கு', smartFarming: 'ஸ்மார்ட் விவசாய தளம்' },
-  gu: { home: 'હોમ', equipment: 'સાધનો', labour: 'મજૂર', agri: 'ખેતી', howItWorks: 'કેવી રીતે કામ કરે છે', help: 'મદદ', accounts: 'ખાતું', yourInfo: 'તમારી માહિતી', bookings: 'મારી બુકિંગ', payments: 'ચુકવણી ઇતિહાસ', wishlist: 'વિશ્લિસ્ટ', notifications: 'સૂચનાઓ', changeLanguage: 'ભાષા બદલો', supplierDashboard: 'સપ્લાયર ડેશબોર્ડ', helpSupport: 'મદદ', policies: 'નીતિઓ', logout: 'લૉગ આઉટ', navigation: 'નેવિગેશન', account: 'ખાતું', smartFarming: 'સ્માર્ટ ખેતી પ્લેટફોર્મ' },
-  pa: { home: 'ਹੋਮ', equipment: 'ਉਪਕਰਣ', labour: 'ਮਜ਼ਦੂਰ', agri: 'ਖੇਤੀ', howItWorks: 'ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ', help: 'ਮਦਦ', accounts: 'ਖਾਤਾ', yourInfo: 'ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ', bookings: 'ਮੇਰੀਆਂ ਬੁਕਿੰਗਾਂ', payments: 'ਭੁਗਤਾਨ ਇਤਿਹਾਸ', wishlist: 'ਵਿਸ਼ਲਿਸਟ', notifications: 'ਸੂਚਨਾਵਾਂ', changeLanguage: 'ਭਾਸ਼ਾ ਬਦਲੋ', supplierDashboard: 'ਸਪਲਾਇਰ ਡੈਸ਼ਬੋਰਡ', helpSupport: 'ਮਦਦ', policies: 'ਨੀਤੀਆਂ', logout: 'ਲੌਗ ਆਉਟ', navigation: 'ਨੈਵੀਗੇਸ਼ਨ', account: 'ਖਾਤਾ', smartFarming: 'ਸਮਾਰਟ ਖੇਤੀ ਪਲੇਟਫਾਰਮ' },
-  bn: { home: 'হোম', equipment: 'সরঞ্জাম', labour: 'শ্রমিক', agri: 'কৃষি', howItWorks: 'কীভাবে কাজ করে', help: 'সাহায্য', accounts: 'অ্যাকাউন্ট', yourInfo: 'আপনার তথ্য', bookings: 'আমার বুকিং', payments: 'পেমেন্ট ইতিহাস', wishlist: 'উইশলিস্ট', notifications: 'বিজ্ঞপ্তি', changeLanguage: 'ভাষা পরিবর্তন', supplierDashboard: 'সাপ্লায়ার ড্যাশবোর্ড', helpSupport: 'সাহায্য', policies: 'নীতিমালা', logout: 'লগ আউট', navigation: 'নেভিগেশন', account: 'অ্যাকাউন্ট', smartFarming: 'স্মার্ট কৃষি প্ল্যাটফর্ম' },
-  or: { home: 'ହୋମ', equipment: 'ଉପକରଣ', labour: 'ଶ୍ରମିକ', agri: 'କୃଷି', howItWorks: 'କିପରି କାମ କରେ', help: 'ସାହାଯ୍ୟ', accounts: 'ଖାତା', yourInfo: 'ଆପଣଙ୍କ ସୂଚନା', bookings: 'ମୋ ବୁକିଂ', payments: 'ଦେୟ ଇତିହାସ', wishlist: 'ୱିଶ୍‌ଲିଷ୍ଟ', notifications: 'ବିଜ୍ଞପ୍ତି', changeLanguage: 'ଭାଷା ବଦଳାନ୍ତୁ', supplierDashboard: 'ସପ୍ଲାୟର ଡ୍ୟାଶ୍‌ବୋର୍ଡ', helpSupport: 'ସାହାଯ୍ୟ', policies: 'ନୀତି', logout: 'ଲଗ ଆଉଟ', navigation: 'ନ୍ୟାଭିଗେସନ', account: 'ଖାତା', smartFarming: 'ସ୍ମାର୍ଟ କୃଷି ପ୍ଲାଟଫର୍ମ' },
-};
+import { MapPin, Bell, ChevronDown, User, ShoppingBag, CreditCard, Heart, Globe, Store, HelpCircle, FileText, LogOut, Menu, X, ChevronRight, ShoppingCart, Loader2, Check } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 
 export default function Header() {
+  const { t, language, setLanguage } = useLanguage();
   const [accountOpen, setAccountOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [notifCount] = useState(3);
   const [mounted, setMounted] = useState(false);
   const [location, setLocation] = useState<string>('Detecting...');
   const [locationLoading, setLocationLoading] = useState(false);
-  const [lang, setLang] = useState('en');
   const accountRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
     detectLocation();
-    const savedLang = localStorage.getItem('kisansetu_language');
-    if (savedLang && HEADER_TRANSLATIONS[savedLang]) {
-      setLang(savedLang);
-    }
-    function onStorage(e: StorageEvent) {
-      if (e.key === 'kisansetu_language' && e.newValue && HEADER_TRANSLATIONS[e.newValue]) {
-        setLang(e.newValue);
-      }
-    }
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const t = HEADER_TRANSLATIONS[lang] || HEADER_TRANSLATIONS['en'];
-
   const NAV_LINKS = [
-    { label: t.home, href: '/' },
-    { label: t.equipment, href: '/equipment-listing-page' },
-    { label: t.labour, href: '/labour' },
-    { label: t.agri, href: '/agri' },
-    { label: t.howItWorks, href: '/how-it-works' },
-    { label: t.help, href: '/help' },
+    { label: t('home'), href: '/' },
+    { label: t('equipment'), href: '/equipment-listing-page' },
+    { label: t('labour'), href: '/labour' },
+    { label: t('agri'), href: '/agri' },
+    { label: t('howItWorks'), href: '/how-it-works' },
+    { label: t('help'), href: '/help' },
   ];
 
   const ACCOUNT_MENU = [
-    { icon: User, label: t.yourInfo, href: '/account/profile' },
-    { icon: ShoppingBag, label: t.bookings, href: '/account/bookings' },
-    { icon: CreditCard, label: t.payments, href: '/account/payments' },
-    { icon: Heart, label: t.wishlist, href: '/account/wishlist' },
-    { icon: Bell, label: t.notifications, href: '/account/notifications' },
-    { icon: Globe, label: t.changeLanguage, href: '/account/language' },
-    { icon: Store, label: t.supplierDashboard, href: '/supplier/dashboard' },
-    { icon: HelpCircle, label: t.helpSupport, href: '/help' },
-    { icon: FileText, label: t.policies, href: '/policies' },
-    { icon: LogOut, label: t.logout, href: '/sign-up-login-screen', danger: true },
+    { icon: User, label: t('yourInfo'), href: '/account/profile' },
+    { icon: ShoppingBag, label: t('bookings'), href: '/account/bookings' },
+    { icon: CreditCard, label: t('payments'), href: '/account/payments' },
+    { icon: Heart, label: t('wishlist'), href: '/account/wishlist' },
+    { icon: Bell, label: t('notifications'), href: '/account/notifications' },
+    { icon: Globe, label: t('changeLanguage'), href: '/account/language' },
+    { icon: Store, label: t('supplierDashboard'), href: '/supplier/dashboard' },
+    { icon: HelpCircle, label: t('helpSupport'), href: '/help' },
+    { icon: FileText, label: t('policies'), href: '/policies' },
+    { icon: LogOut, label: t('logout'), href: '/sign-up-login-screen', danger: true },
   ];
 
   function detectLocation() {
@@ -115,10 +87,15 @@ export default function Header() {
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setAccountOpen(false);
       }
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const currentLang = SUPPORTED_LANGUAGES.find((l) => l.code === language);
 
   return (
     <>
@@ -129,7 +106,7 @@ export default function Header() {
               <AppLogo size={36} />
               <div className="hidden sm:block">
                 <span className="font-extrabold text-lg text-primary leading-none">KisanSetu</span>
-                <p className="text-xs text-muted-foreground leading-none mt-0.5">{t.smartFarming}</p>
+                <p className="text-xs text-muted-foreground leading-none mt-0.5">{t('smartFarming')}</p>
               </div>
             </Link>
 
@@ -158,10 +135,47 @@ export default function Header() {
                   <MapPin size={15} className="text-primary" />
                 )}
                 <span className="hidden xl:inline max-w-[140px] truncate">
-                  {locationLoading ? 'Detecting...' : location}
+                  {locationLoading ? t('heroDetecting') : location}
                 </span>
                 <ChevronDown size={13} className="text-muted-foreground" />
               </button>
+
+              {/* Global Language Switcher */}
+              <div className="relative" ref={langRef}>
+                <button
+                  suppressHydrationWarning
+                  onClick={() => setLangOpen(!langOpen)}
+                  className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg border border-border bg-white hover:bg-secondary transition-colors duration-150 text-sm font-medium text-foreground"
+                  title={t('changeLanguage')}
+                >
+                  <Globe size={15} className="text-primary" />
+                  <span className="hidden sm:inline font-semibold text-xs">{currentLang?.nativeName || 'EN'}</span>
+                  <ChevronDown size={12} className="text-muted-foreground" />
+                </button>
+                {langOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-card rounded-xl border border-border shadow-modal z-50 py-1.5 fade-in">
+                    <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border mb-1">
+                      {t('changeLanguage')}
+                    </p>
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => { setLanguage(lang.code); setLangOpen(false); }}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 text-sm transition-colors hover:bg-muted ${language === lang.code ? 'text-primary font-semibold' : 'text-foreground'}`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-base">{lang.flag}</span>
+                          <div className="text-left">
+                            <p className="font-semibold text-sm leading-none">{lang.nativeName}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{lang.name}</p>
+                          </div>
+                        </div>
+                        {language === lang.code && <Check size={14} className="text-primary shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <Link
                 href="/account/notifications"
@@ -191,7 +205,7 @@ export default function Header() {
                   <div className="w-7 h-7 rounded-full gradient-green flex items-center justify-center">
                     <User size={14} className="text-white" />
                   </div>
-                  <span className="hidden md:inline text-sm font-semibold text-foreground">{t.accounts}</span>
+                  <span className="hidden md:inline text-sm font-semibold text-foreground">{t('accounts')}</span>
                   <ChevronDown size={14} className="text-muted-foreground" />
                 </button>
 
@@ -207,10 +221,10 @@ export default function Header() {
                         href={item.href}
                         onClick={() => setAccountOpen(false)}
                         className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors duration-150 hover:bg-muted ${
-                          item.danger ? 'text-danger hover:bg-danger-bg' : 'text-foreground'
+                          (item as { danger?: boolean }).danger ? 'text-danger hover:bg-danger-bg' : 'text-foreground'
                         }`}
                       >
-                        <item.icon size={16} className={item.danger ? 'text-danger' : 'text-muted-foreground'} />
+                        <item.icon size={16} className={(item as { danger?: boolean }).danger ? 'text-danger' : 'text-muted-foreground'} />
                         {item.label}
                       </Link>
                     ))}
@@ -244,33 +258,53 @@ export default function Header() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto py-2">
-              <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t.navigation}</p>
+              <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('navigation')}</p>
               {NAV_LINKS.map((link) => (
                 <Link
                   key={`mob-${link.href}`}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-secondary hover:text-primary transition-colors"
+                  className="flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                 >
                   {link.label}
-                  <ChevronRight size={16} className="text-muted-foreground" />
+                  <ChevronRight size={15} className="text-muted-foreground" />
                 </Link>
               ))}
               <div className="border-t border-border mt-2 pt-2">
-                <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t.account}</p>
+                <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('account')}</p>
                 {ACCOUNT_MENU.map((item) => (
                   <Link
                     key={`mob-acct-${item.href}`}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-muted ${
-                      item.danger ? 'text-danger' : 'text-foreground'
+                      (item as { danger?: boolean }).danger ? 'text-danger' : 'text-foreground'
                     }`}
                   >
-                    <item.icon size={16} className={item.danger ? 'text-danger' : 'text-muted-foreground'} />
+                    <item.icon size={16} className={(item as { danger?: boolean }).danger ? 'text-danger' : 'text-muted-foreground'} />
                     {item.label}
                   </Link>
                 ))}
+              </div>
+              {/* Mobile Language Switcher */}
+              <div className="border-t border-border mt-2 pt-2 px-4 pb-4">
+                <p className="py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('changeLanguage')}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => { setLanguage(lang.code); setMobileOpen(false); }}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        language === lang.code
+                          ? 'border-primary bg-primary/5 text-primary' :'border-border text-foreground hover:border-primary/40'
+                      }`}
+                    >
+                      <span>{lang.flag}</span>
+                      <span className="font-semibold">{lang.nativeName}</span>
+                      {language === lang.code && <Check size={12} className="text-primary ml-auto" />}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

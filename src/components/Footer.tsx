@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const FacebookIcon = ({ size = 15 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -34,38 +37,39 @@ const SOCIAL_ICONS: Array<{ icon: React.ComponentType<{ size?: number }>; label:
   { icon: InstagramIcon, label: 'Instagram' },
 ];
 
-const FOOTER_LINKS = {
-  Platform: [
-    { label: 'Equipment', href: '/equipment-listing-page' },
-    { label: 'Labour', href: '/labour' },
-    { label: 'Agri Supplies', href: '/agri' },
-    { label: 'How It Works', href: '/how-it-works' },
-    { label: 'Become a Supplier', href: '/supplier/onboarding' },
-  ],
-  Support: [
-    { label: 'Help & Support', href: '/help' },
-    { label: 'Contact Us', href: '/help' },
-    { label: 'FAQs', href: '/help' },
-    { label: 'Voice Help', href: '/help' },
-    { label: 'Report an Issue', href: '/help' },
-  ],
-  Policies: [
-    { label: 'Terms of Use', href: '/policies' },
-    { label: 'Privacy Policy', href: '/policies' },
-    { label: 'Cancellation Policy', href: '/policies' },
-    { label: 'Refund Policy', href: '/policies' },
-    { label: 'Supplier Agreement', href: '/policies' },
-  ],
-  Languages: [
-    { label: 'English', href: '/account/language' },
-    { label: 'हिंदी', href: '/account/language' },
-    { label: 'मराठी', href: '/account/language' },
-    { label: 'ಕನ್ನಡ', href: '/account/language' },
-    { label: 'తెలుగు', href: '/account/language' },
-  ],
-};
-
 export default function Footer() {
+  const { t } = useLanguage();
+
+  const FOOTER_LINKS = {
+    [t('footerPlatform')]: [
+      { label: t('footerEquipment'), href: '/equipment-listing-page' },
+      { label: t('footerLabour'), href: '/labour' },
+      { label: t('footerAgriSupplies'), href: '/agri' },
+      { label: t('footerHowItWorks'), href: '/how-it-works' },
+      { label: t('footerBecomeSupplier'), href: '/supplier/onboarding' },
+    ],
+    [t('footerSupport')]: [
+      { label: t('footerHelpSupport'), href: '/help' },
+      { label: t('footerContactUs'), href: '/help' },
+      { label: t('footerFaqs'), href: '/help' },
+      { label: t('footerVoiceHelp'), href: '/help' },
+      { label: t('footerReportIssue'), href: '/help' },
+    ],
+    [t('footerPolicies')]: [
+      { label: t('footerTerms'), href: '/policies' },
+      { label: t('footerPrivacy'), href: '/policies' },
+      { label: t('footerCancellation'), href: '/policies' },
+      { label: t('footerRefund'), href: '/policies' },
+      { label: t('footerSupplierAgreement'), href: '/policies' },
+    ],
+    [t('footerLanguages')]: [
+      { label: 'English', href: '/account/language' },
+      { label: 'हिंदी', href: '/account/language' },
+      { label: 'मराठी', href: '/account/language' },
+      { label: 'ಕನ್ನಡ', href: '/account/language' },
+    ],
+  };
+
   return (
     <footer className="bg-foreground text-white">
       <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 xl:px-10 2xl:px-16 py-12">
@@ -76,7 +80,7 @@ export default function Footer() {
               <span className="font-extrabold text-xl text-white">KisanSetu</span>
             </div>
             <p className="text-sm text-white/70 leading-relaxed mb-4">
-              Smart Farming Equipment, Labour &amp; Agri Supplies Platform. Connecting farmers across India with the resources they need.
+              {t('footerDesc')}
             </p>
             <div className="space-y-2 text-sm text-white/70">
               <div className="flex items-center gap-2">
@@ -126,11 +130,11 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/15 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/50">
-          <p>© 2026 KisanSetu Technologies Pvt. Ltd. All rights reserved. CIN: U01400MH2024PTC123456</p>
+          <p>{t('footerRights')}</p>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              All systems operational
+              {t('footerAllSystems')}
             </span>
             <span>v2.4.1</span>
           </div>

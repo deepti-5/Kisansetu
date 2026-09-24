@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import '../styles/tailwind.css';
 import { Toaster } from 'sonner';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -31,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={plusJakartaSans.variable}>
       <body className={plusJakartaSans.className}>
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
         <Toaster
           position="bottom-right"
           toastOptions={{

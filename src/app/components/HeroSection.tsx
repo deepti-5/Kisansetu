@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Mic, Camera, MapPin, X, Loader2 } from 'lucide-react';
 import AppImage from '@/components/ui/AppImage';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const POPULAR_SEARCHES = ['Tractor', 'Harvester', 'Rotavator', 'Seeds', 'Labour', 'Pesticides', 'Seed Drill', 'Sprayer'];
 
 export default function HeroSection() {
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [voiceActive, setVoiceActive] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -94,15 +96,15 @@ export default function HeroSection() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/25 text-white text-xs font-semibold mb-5 backdrop-blur-sm">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              Available in 12 Indian States · 9 Languages
+              {t('heroAvailableIn')}
             </div>
 
             <h1 className="text-hero-xl font-extrabold text-white leading-tight mb-2">
-              Find Equipment.<br />
-              Hire Labour.<br />
-              <span className="text-accent">Get Agri Supplies.</span>
+              {t('heroTitle1')}<br />
+              {t('heroTitle2')}<br />
+              <span className="text-accent">{t('heroTitle3')}</span>
             </h1>
-            <p className="text-white/80 text-lg font-medium mt-3 mb-7">Farm Smarter.</p>
+            <p className="text-white/80 text-lg font-medium mt-3 mb-7">{t('heroSubtitle')}</p>
 
             <div className="bg-white rounded-2xl shadow-modal p-2 mb-4">
               <div className="flex items-center gap-2">
@@ -114,7 +116,7 @@ export default function HeroSection() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search for Equipments, Labours, Seeds, Pesticides..."
+                    placeholder={t('heroSearchPlaceholder')}
                     className="flex-1 py-2.5 text-sm text-foreground placeholder:text-muted-foreground bg-transparent outline-none"
                   />
                   {query && (
@@ -141,14 +143,14 @@ export default function HeroSection() {
                     <Camera size={18} />
                   </button>
                   <button suppressHydrationWarning onClick={handleSearch} className="btn-primary px-5 py-2.5 rounded-xl whitespace-nowrap">
-                    Search
+                    {t('search')}
                   </button>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-white/70 text-xs font-medium">Popular:</span>
+              <span className="text-white/70 text-xs font-medium">{t('heroPopular')}</span>
               {POPULAR_SEARCHES.map((term) => (
                 <button
                   suppressHydrationWarning
@@ -163,46 +165,44 @@ export default function HeroSection() {
 
             <div className="flex items-center gap-2 mt-4">
               {locationLoading ? <Loader2 size={14} className="text-accent animate-spin" /> : <MapPin size={14} className="text-accent" />}
-              <span className="text-white/80 text-sm">Showing results near</span>
+              <span className="text-white/80 text-sm">{t('heroShowingNear')}</span>
               <button
                 suppressHydrationWarning
                 onClick={detectLocation}
                 className="text-accent text-sm font-semibold hover:underline flex items-center gap-1"
               >
-                {locationLoading ? 'Detecting...' : location}
+                {locationLoading ? t('heroDetecting') : location}
                 <span className="text-white/50">↓</span>
               </button>
             </div>
 
             <div className="flex items-center gap-3 mt-6">
-              <Link href="/equipment-listing-page" className="btn-accent px-6 py-3 text-base">Get Started</Link>
-              <Link href="/how-it-works" className="btn-secondary px-6 py-3 text-base border-white/40 text-white hover:bg-white/15">How It Works</Link>
+              <Link href="/equipment-listing-page" className="btn-accent px-6 py-3 text-base">{t('heroGetStarted')}</Link>
+              <Link href="/how-it-works" className="btn-secondary px-6 py-3 text-base border-white/40 text-white hover:bg-white/15">{t('heroHowItWorks')}</Link>
             </div>
           </div>
 
           <div className="hidden lg:flex flex-col items-end gap-4">
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Equipment Listed', value: '2,345+', icon: '🚜' },
-                { label: 'Labour Providers', value: '3,210+', icon: '👨‍🌾' },
-                { label: 'Agri Products', value: '1,845+', icon: '🌱' },
-                { label: 'Happy Farmers', value: '12,540+', icon: '😊' },
+                { labelKey: 'heroEquipmentListed', value: '2,345+', icon: '🚜' },
+                { labelKey: 'heroLabourProviders', value: '3,210+', icon: '👨‍🌾' },
+                { labelKey: 'heroAgriProducts', value: '1,845+', icon: '🌱' },
+                { labelKey: 'heroHappyFarmers', value: '12,540+', icon: '😊' },
               ].map((stat) => (
-                <div key={`stat-${stat.label}`} className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-white">
+                <div key={`stat-${stat.labelKey}`} className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-white">
                   <div className="text-2xl mb-1">{stat.icon}</div>
                   <div className="text-2xl font-bold font-tabular">{stat.value}</div>
-                  <div className="text-xs text-white/70 font-medium mt-0.5">{stat.label}</div>
+                  <div className="text-xs text-white/70 font-medium mt-0.5">{t(stat.labelKey)}</div>
                 </div>
               ))}
             </div>
             <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-white w-full">
               <div className="flex items-center gap-2 mb-2">
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span className="text-xs font-semibold text-white/80">DEMO MODE ACTIVE</span>
+                <span className="text-xs font-semibold text-white/80">{t('heroDemoMode')}</span>
               </div>
-              <p className="text-xs text-white/65">
-                OTP, Payments, Maps &amp; AI features are in demo mode. Real credentials shown on login screen.
-              </p>
+              <p className="text-xs text-white/65">{t('heroDemoDesc')}</p>
             </div>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function HeroSection() {
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-card rounded-2xl shadow-modal w-full max-w-md p-6 fade-in">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-foreground">Search by Image</h3>
+              <h3 className="font-bold text-lg text-foreground">{t('heroSearchByImage')}</h3>
               <button suppressHydrationWarning onClick={() => setCameraOpen(false)} className="p-1.5 rounded-lg hover:bg-muted">
                 <X size={18} />
               </button>
@@ -224,7 +224,7 @@ export default function HeroSection() {
             {cameraLoading ? (
               <div className="flex flex-col items-center gap-3 py-8">
                 <Loader2 size={32} className="text-primary animate-spin" />
-                <p className="text-sm font-medium text-muted-foreground">Identifying via AI...</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('heroIdentifying')}</p>
                 <p className="text-xs text-muted-foreground">DEMO MODE — no actual API call</p>
               </div>
             ) : (
@@ -235,8 +235,8 @@ export default function HeroSection() {
                   className="flex flex-col items-center gap-2 p-5 rounded-xl border-2 border-dashed border-primary/30 hover:border-primary hover:bg-secondary transition-all duration-150"
                 >
                   <Camera size={28} className="text-primary" />
-                  <span className="text-sm font-semibold text-primary">Upload Photo</span>
-                  <span className="text-xs text-muted-foreground">from gallery</span>
+                  <span className="text-sm font-semibold text-primary">{t('heroUploadPhoto')}</span>
+                  <span className="text-xs text-muted-foreground">{t('heroFromGallery')}</span>
                 </button>
                 <button
                   suppressHydrationWarning
@@ -244,8 +244,8 @@ export default function HeroSection() {
                   className="flex flex-col items-center gap-2 p-5 rounded-xl border-2 border-dashed border-accent/40 hover:border-accent hover:bg-warning-bg transition-all duration-150"
                 >
                   <span className="text-2xl">📷</span>
-                  <span className="text-sm font-semibold text-warning">Take Photo</span>
-                  <span className="text-xs text-muted-foreground">use camera</span>
+                  <span className="text-sm font-semibold text-warning">{t('heroTakePhoto')}</span>
+                  <span className="text-xs text-muted-foreground">{t('heroUseCamera')}</span>
                 </button>
               </div>
             )}

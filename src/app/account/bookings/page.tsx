@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Package, Truck, RotateCcw, Search } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type BookingStatus = 'confirmed' | 'preparing' | 'received' | 'rental_active' | 'returned' | 'cancelled';
 type BookingType = 'rental' | 'purchase';
@@ -17,8 +18,6 @@ const STATUS_COLORS: Record<BookingStatus, string> = {
   returned: 'text-muted-foreground bg-muted border-border', cancelled: 'text-danger bg-danger/10 border-danger/20'
 };
 
-const STATUS_LABELS: Record<BookingStatus, string> = { confirmed: 'Confirmed', preparing: 'Preparing', received: 'Received', rental_active: 'Rental Active', returned: 'Returned', cancelled: 'Cancelled' };
-
 const MOCK_BOOKINGS: Booking[] = [
 { id: 'BKG82341', type: 'rental', equipmentName: 'Mahindra 575 DI Tractor', equipmentCategory: 'Tractor', equipmentImage: 'https://images.unsplash.com/photo-1708417134916-234bb4b33881', supplierName: 'Ramesh Agro Services', location: 'Pune, Maharashtra', startDate: '2026-08-10', endDate: '2026-08-14', status: 'rental_active', paymentMethod: 'UPI', amountPaid: 8500, deposit: 2000, createdAt: '2026-08-09' },
 { id: 'BKG71209', type: 'rental', equipmentName: 'Rotavator 7-Feet Heavy Duty', equipmentCategory: 'Tillage Equipment', equipmentImage: "https://img.rocket.new/generatedImages/rocket_gen_img_163ecef60-1784222686661.png", supplierName: 'Singh Farm Machinery', location: 'Nashik, Maharashtra', startDate: '2026-07-20', endDate: '2026-07-22', status: 'returned', paymentMethod: 'Net Banking', amountPaid: 3200, deposit: 1000, createdAt: '2026-07-19' },
@@ -29,8 +28,18 @@ const MOCK_BOOKINGS: Booking[] = [
 const FILTER_TABS = [{ key: 'all', label: 'All Bookings' }, { key: 'rental', label: 'Rentals' }, { key: 'purchase', label: 'Purchases' }, { key: 'active', label: 'Active' }, { key: 'completed', label: 'Completed' }];
 
 export default function BookingsPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
+
+  const STATUS_LABELS: Record<BookingStatus, string> = {
+    confirmed: t('statusConfirmed'),
+    preparing: t('statusPreparing'),
+    received: t('statusReceived'),
+    rental_active: t('statusRentalActive'),
+    returned: t('statusReturned'),
+    cancelled: t('statusCancelled'),
+  };
 
   const filtered = MOCK_BOOKINGS.filter((b) => {
     const matchTab = activeTab === 'all' || activeTab === 'rental' && b.type === 'rental' || activeTab === 'purchase' && b.type === 'purchase' || activeTab === 'active' && ['confirmed', 'preparing', 'received', 'rental_active'].includes(b.status) || activeTab === 'completed' && ['returned', 'cancelled'].includes(b.status);
@@ -45,13 +54,13 @@ export default function BookingsPage() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link href="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <span className="text-foreground font-medium">My Bookings</span>
+          <span className="text-foreground font-medium">{t('myBookingsTitle')}</span>
         </div>
-        <h1 className="text-2xl font-extrabold text-foreground mb-6">My Bookings & Orders</h1>
+        <h1 className="text-2xl font-extrabold text-foreground mb-6">{t('myBookingsTitle')}</h1>
 
         <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-2.5 shadow-sm mb-4">
           <Search size={18} className="text-muted-foreground shrink-0" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by equipment name or booking ID..." className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('searchBookings')} className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
         </div>
 
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
@@ -59,7 +68,7 @@ export default function BookingsPage() {
         </div>
 
         {filtered.length === 0 ?
-        <div className="card-base p-16 text-center"><Package size={48} className="text-muted-foreground mx-auto mb-4" /><h3 className="font-bold text-xl text-foreground mb-2">No bookings found</h3><p className="text-muted-foreground text-sm mb-6">You haven&apos;t made any bookings yet.</p><Link href="/equipment-listing-page" className="btn-primary">Browse Equipment</Link></div> :
+        <div className="card-base p-16 text-center"><Package size={48} className="text-muted-foreground mx-auto mb-4" /><h3 className="font-bold text-xl text-foreground mb-2">{t('noBookingsFound')}</h3><p className="text-muted-foreground text-sm mb-6">{t('noBookingsDesc')}</p><Link href="/equipment-listing-page" className="btn-primary">{t('browseEquipment')}</Link></div> :
 
         <div className="space-y-4">
             {filtered.map((booking) =>
@@ -83,9 +92,9 @@ export default function BookingsPage() {
                       {booking.deposit && <span className="text-warning">Deposit: ₹{booking.deposit.toLocaleString('en-IN')}</span>}
                     </div>
                     <div className="flex gap-2 mt-3">
-                      {['confirmed', 'preparing', 'received', 'rental_active'].includes(booking.status) && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"><Truck size={13} /> Track</button>}
-                      {booking.status === 'rental_active' && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-semibold hover:bg-warning/20 transition-colors"><RotateCcw size={13} /> Return</button>}
-                      {booking.status === 'returned' && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors">⭐ Review</button>}
+                      {['confirmed', 'preparing', 'received', 'rental_active'].includes(booking.status) && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"><Truck size={13} /> {t('track')}</button>}
+                      {booking.status === 'rental_active' && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-semibold hover:bg-warning/20 transition-colors"><RotateCcw size={13} /> {t('return')}</button>}
+                      {booking.status === 'returned' && <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors">{t('writeReview')}</button>}
                     </div>
                   </div>
                 </div>
